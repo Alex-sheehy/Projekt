@@ -1,9 +1,8 @@
 import pandas as pd
-import numpy as np
-import scipy.optimize as opt
 import osmnx as ox
 import re
 import matplotlib.pylab as plt
+import copy
 
 
 def ladda_data(file_path):
@@ -113,7 +112,11 @@ def skapa_brukare_dict(brukare_df,tider,regex_filters):
                     "Har stomi": har_stomi,
                     "Har hund": row["Har hund"],
                     "Har katt": row["Har katt"],
-                    "Kräver>18": row["Kräver >18"]
+                    "Kräver>18": row["Kräver >18"],
+                    "Kräver man": False,
+                    "Kräver kvinna": False,
+                    "Dusch": False,
+                    "Aktivering": False
                 }
             else:
                 dubbelbemanning = False
@@ -127,7 +130,11 @@ def skapa_brukare_dict(brukare_df,tider,regex_filters):
                     "Har stomi": har_stomi,
                     "Har hund": row["Har hund"],
                     "Har katt": row["Har katt"],
-                    "Kräver>18": row["Kräver >18"]
+                    "Kräver>18": row["Kräver >18"],
+                    "Kräver man": False,
+                    "Kräver kvinna": False,
+                    "Dusch": False,
+                    "Aktivering": False
                 }
         
         brukare_dict[tid] = tidsfönster_brukare_dict
@@ -166,22 +173,84 @@ def skapa_medarbetare_dict(medarbetare_df, tider, reges_filters):
     return medarbetare_dict
 
 
-def skapa_dag_dict(brukare_dag_dict, medarbetare_dag_dict, regex_mönster):
+def skapa_dag_dict(brukare_df, medarbetare_df, brukare_dag_dict, medarbetare_dag_dict, regex):
     """
     Skapar en dict för hela dagen. Där även den lägger in speciella villkor
     som gäller för det specefika dagen. 
     """
     dag_dict = {}
+    tid_regex = r'\b\d{2}\b'
+    #Uppdaterar för dusch villkor
+    dusch_behov_df = brukare_df[brukare_df["Dusch"].str.contains(regex, na=False)]
+    for index, row in dusch_behov_df.iterrows():
+        dusch_tid = re.search(tid_regex,row["Dusch"])
+        if dusch_tid == None:
+            #Om det inte finns en bestämd duschtid så sätts det till 30 min
+            dusch_tid = 30
+        else:
+            dusch_tid = int(dusch_tid.group())
+        krav_på_man = "vid dusch" in row["Kräver man"]
+        krav_på_kvinna = "vid dusch" in row["Kräver kvinna"]
+        try:
+            besök_tid = brukare_dag_dict["Förmiddag"][row["Individ"]]["Tid"]
+            uppdaterad_besök_tid = int(besök_tid) + dusch_tid
+            brukare_dag_dict["Förmiddag"][row["Individ"]]["Tid"] = uppdaterad_besök_tid
+            brukare_dag_dict["Förmiddag"][row["Individ"]]["Kräver man"] = krav_på_man
+            brukare_dag_dict["Förmiddag"][row["Individ"]]["Kräver kvinna"] = krav_på_kvinna
+            brukare_dag_dict["Förmiddag"][row["Individ"]]["Dusch"] = True
+        except KeyError:
+            #om burkaren inte skulle få besök på fm så sätts det in ett
+            brukare_dag_dict["Förmiddag"][row["Individ"]] = {
+                "Tid": dusch_tid,
+                "Dubbelbemanning": False,
+                "Behöver läkemedel": False,
+                "Kräver körkort": row["Kräver körkort"],
+                "Behöver insulin": False,
+                "Har stomi": False,
+                "Har hund": row["Har hund"],
+                "Har katt": row["Har katt"],
+                "Kräver>18": row["Kräver >18"],
+                "Kräver man": krav_på_man,
+                "Kräver kvinna": krav_på_kvinna,
+                "Dusch": True,
+                "Aktivering": False
+            }
 
-    #Kollar dusch villkor
+    #Uppdaterar för aktiverings villkor
+    aktiverings_behov_df = brukare_df[brukare_df["Aktivering"].str.contains(regex, na=False)]
+    for index, row in aktiverings_behov_df.iterrows():
+        aktiverings_tid = re.search(tid_regex,row["Aktivering"])
+        if aktiverings_tid == None:
+            #Om det inte finns en bestämd aktiveringstid så sätts det till 30 min
+            aktiverings_tid = 30
+        else:
+            aktiverings_tid = int(aktiverings_tid.group())
+        try:
+            besök_tid = brukare_dag_dict["Eftermiddag"][row["Individ"]]["Tid"]
+            uppdaterad_besök_tid = int(besök_tid) + aktiverings_tid
+            brukare_dag_dict["Eftermiddag"][row["Individ"]]["Tid"] = uppdaterad_besök_tid
+            brukare_dag_dict["Eftermiddag"][row["Individ"]]["Aktivering"] = True
+        except KeyError:
+            #om burkaren inte skulle få besök på em så sätts det in ett
+            brukare_dag_dict["Eftermiddag"][row["Individ"]] = {
+                "Tid": dusch_tid,
+                "Dubbelbemanning": False,
+                "Behöver läkemedel": False,
+                "Kräver körkort": row["Kräver körkort"],
+                "Behöver insulin": False,
+                "Har stomi": False,
+                "Har hund": row["Har hund"],
+                "Har katt": row["Har katt"],
+                "Kräver>18": row["Kräver >18"],
+                "Kräver man": False,
+                "Kräver kvinna": False,
+                "Dusch": False,
+                "Aktivering": True
+            }
 
-
-    #Kollar aktiverings villkor
-
-
-
-
-
+        dag_dict = {
+            "Brukare": brukare_dag_dict,
+            "Medarbetare": medarbetare_dag_dict}
     return dag_dict
 
 
@@ -211,17 +280,26 @@ def main():
     #Skapar dicts för alla olika tidsfönster som besök kan ske med data om brukare
     brukare_dag_dict = skapa_brukare_dict(brukare_df, tid, regex_tid_mönster)
 
-    #Test print, den ska bort!
-    morgDict = brukare_dag_dict["Morgon"]
-    print(morgDict)
-
     #Skapa dicts för medarebetare och dess villkor, för de olika tidsfönstrena
     #TODO: Fixa då att det faktiskt är någon skillnad på medarbetarna mellan de olika tidsfönstrena
     medarbetare_dag_dict = skapa_medarbetare_dict(medarbetare_df, tid, regex_tid_mönster)
 
     #Skapar dicts för alla veckodagar
-    mån_dict = skapa_dag_dict(brukare_dag_dict, medarbetare_dag_dict, r'/b[mM]ån')
+    regex_dag_mönster = [r'\b[mM]ån', r'\b[tT]is', r'\b[oO]ns', r'\b[tT]or', r'\b[fF]re']
+    mån_dict = skapa_dag_dict(brukare_df, medarbetare_df, copy.deepcopy(brukare_dag_dict), medarbetare_dag_dict.copy(), regex_dag_mönster[0])
+    tis_dict = skapa_dag_dict(brukare_df, medarbetare_df, copy.deepcopy(brukare_dag_dict), medarbetare_dag_dict.copy(), regex_dag_mönster[1])
+    ons_dict = skapa_dag_dict(brukare_df, medarbetare_df, copy.deepcopy(brukare_dag_dict), medarbetare_dag_dict.copy(), regex_dag_mönster[2])
+    tor_dict = skapa_dag_dict(brukare_df, medarbetare_df, copy.deepcopy(brukare_dag_dict), medarbetare_dag_dict.copy(), regex_dag_mönster[3])
+    fre_dict = skapa_dag_dict(brukare_df, medarbetare_df, copy.deepcopy(brukare_dag_dict), medarbetare_dag_dict.copy(), regex_dag_mönster[4])
+
+    vecko_dict = {"Måndag": mån_dict,
+               "Tidag": tis_dict,
+               "Onsdag": ons_dict,
+               "Torsdag": tor_dict,
+               "Fredag": fre_dict}
     
+    for key, value in mån_dict["Brukare"]["Förmiddag"].items():
+        print(f"{key}: {value}")
     
     #TODO fixa så att kartan kan användas på rätt sätt
     #loadNodeMap()
