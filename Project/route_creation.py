@@ -10,10 +10,12 @@ def skapa_brukare_dict(brukare_df, tider, regex_filters):
     for index, tid in enumerate(tider):
         regex_filter = regex_filters[index]
         tidsfönster_brukare_dict = {}
-        läkemedel = brukare_df[brukare_df["Behöver läkemedel"].str.contains(regex_filter, na=False)]
-        insulin = brukare_df[brukare_df["Behöver insulin"].str.contains(regex_filter, na=False)]
-        stomi = brukare_df[brukare_df["Har stomi"].str.contains(regex_filter, na=False)]
-        dubbelbemanning_df = brukare_df[brukare_df[tid].str.contains(r'\*', na=False)]
+
+        # Ensure that the column is treated as a string before applying .str.contains()
+        läkemedel = brukare_df[brukare_df["Behöver läkemedel"].astype(str).str.contains(regex_filter, na=False)]
+        insulin = brukare_df[brukare_df["Behöver insulin"].astype(str).str.contains(regex_filter, na=False)]
+        stomi = brukare_df[brukare_df["Har stomi"].astype(str).str.contains(regex_filter, na=False)]
+        dubbelbemanning_df = brukare_df[brukare_df[tid].astype(str).str.contains(r'\*', na=False)]
         individer = brukare_df[brukare_df[tid].apply(
             lambda x: isinstance(x, int) or (isinstance(x, str) and bool(re.fullmatch(r"\d+\*\d+", x))))]
 
@@ -40,6 +42,7 @@ def skapa_brukare_dict(brukare_df, tider, regex_filters):
             }
         brukare_dict[tid] = tidsfönster_brukare_dict
     return brukare_dict
+
 
 def skapa_medarbetare_dict(medarbetare_df, tider, regex_filters):
     """
@@ -70,11 +73,14 @@ def skapa_dag_dict(brukare_df, medarbetare_df, brukare_dag_dict, medarbetare_dag
     """
     dag_dict = {}
     tid_regex = r'\b\d{2}\b'
-    dusch_behov_df = brukare_df[brukare_df["Dusch"].str.contains(regex, na=False)]
+
+    # Ensure that the 'Dusch' column is treated as string before applying .str.contains()
+    dusch_behov_df = brukare_df[brukare_df["Dusch"].astype(str).str.contains(regex, na=False)]
+
     for index, row in dusch_behov_df.iterrows():
         dusch_tid = int(re.search(tid_regex, row["Dusch"]).group() if re.search(tid_regex, row["Dusch"]) else 30)
-        krav_på_man = "vid dusch" in row["Kräver man"]
-        krav_på_kvinna = "vid dusch" in row["Kräver kvinna"]
+        krav_på_man = "vid dusch" in str(row["Kräver man"])
+        krav_på_kvinna = "vid dusch" in str(row["Kräver kvinna"])
         try:
             brukare_dag_dict["Förmiddag"][row["Individ"]].update({
                 "Tid": int(brukare_dag_dict["Förmiddag"][row["Individ"]]["Tid"]) + dusch_tid,
@@ -99,7 +105,9 @@ def skapa_dag_dict(brukare_df, medarbetare_df, brukare_dag_dict, medarbetare_dag
                 "Aktivering": False
             }
 
-    aktiverings_behov_df = brukare_df[brukare_df["Aktivering"].str.contains(regex, na=False)]
+    # Ensure that the 'Aktivering' column is treated as string before applying .str.contains()
+    aktiverings_behov_df = brukare_df[brukare_df["Aktivering"].astype(str).str.contains(regex, na=False)]
+
     for index, row in aktiverings_behov_df.iterrows():
         aktiverings_tid = int(re.search(tid_regex, row["Aktivering"]).group() if re.search(tid_regex, row["Aktivering"]) else 30)
         try:
@@ -129,6 +137,7 @@ def skapa_dag_dict(brukare_df, medarbetare_df, brukare_dag_dict, medarbetare_dag
         "Medarbetare": medarbetare_dag_dict
     }
     return dag_dict
+
 
 def create_weekly_dict(brukare_df, medarbetare_df, brukare_dag_dict, medarbetare_dag_dict):
     """
