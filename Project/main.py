@@ -1,7 +1,7 @@
 from data_processing import ladda_data, rensa_brukar_data, rensa_medarb_data, read_addresses, assign_addresses_to_brukare
 from route_creation import skapa_brukare_dict, skapa_medarbetare_dict, create_weekly_dict
 from utils import check_visits
-from route_optimization import optimize_routes  # Import the optimize_routes function
+from route_optimization import *  # Import the optimize_routes function
 import osmnx as ox  # Ensure OSMnx is available for graph creation
 
 def main():
@@ -38,9 +38,7 @@ def main():
     G = ox.graph_from_place(place_name, network_type='drive')
     G = ox.utils_graph.get_largest_component(G, strongly=True)
 
-    # Define depot location (example coordinates; adjust as needed)
     depot_location = (64.754, 21.046)
-
     # Perform route optimization based on the provided brukare and medarbetare data
     optimize_routes(brukare_df, medarbetare_df, G, depot_location)
 
