@@ -66,6 +66,24 @@ def generate_matrices(G, customer_locations, depot_location, default_speed_kph=5
 def vehicle_service_compatibility(vehicle_services, customer_services):
     return all(service in vehicle_services for service in customer_services)
 
+PENALTIES = {
+    'license': 100,      # High penalty for lack of license
+    'smoker': 10,        # Lower penalty for smoker presence
+    'dog': 20,           # Penalty for dogs
+    'cat': 20,           # Penalty for cats
+    '>18': 50,           # Penalty if employee is not >18
+    'man': 70,           # High penalty for gender requirement not met
+    'woman': 70,         # High penalty for gender requirement not met
+    'medication': 80,    # High penalty for missing medication requirement
+    'insulin': 80,       # High penalty for missing insulin requirement
+    'stoma': 80,         # High penalty for missing stoma requirement
+    'double_staffing': 90, # High penalty for double staffing not met
+    'shower': 60,        # Penalty for unmet shower requirements
+    'activation': 40     # Penalty for unmet activation requirements
+}
+
+
+
 # Main function to perform route optimization
 def optimize_routes(brukare_df, medarbetare_df, G, depot_location):
     """
