@@ -133,6 +133,37 @@ def optimize_routes(brukare_df, medarbetare_df, G, depot_location):
     # Set the cost of travel (objective is to minimize total time)
     routing.SetArcCostEvaluatorOfAllVehicles(transit_callback_index)
 
+    time = "Time"
+    routing.AddDimension(
+        transit_callback_index,
+        30,  # allow waiting time
+        30,  # maximum time per vehicle
+        False,  # Don't force start cumul to zero.
+        time,
+    )
+
+    time_dimension = routing.GetDimensionOrDie(time)
+
+    # Add time window constraints for each location except depot.
+
+    for location_idx, time_window in enumerate(data["time_windows"]):
+        if location_idx == data["depot"]:
+            continue
+        index = manager.NodeToIndex(location_idx)
+        time_dimension.CumulVar(index).SetRange(time_window[0], time_window[1])
+    # Add time window constraints for each vehicle start node.
+    depot_idx = 0
+    for vehicle_id in range(num_vehicles):
+        index = routing.Start(vehicle_id)
+        time_dimension.CumulVar(index).SetRange(
+            data["time_windows"][depot_idx][0], data["time_windows"][depot_idx][1]
+        )
+    for i in range(data["num_vehicles"]):
+        routing.AddVariableMinimizedByFinalizer(
+            time_dimension.CumulVar(routing.Start(i))
+        )
+        routing.AddVariableMinimizedByFinalizer(time_dimension.CumulVar(routing.End(i)))
+
     def demand_callback(from_index):
         return 1  # Each customer represents a "load" of 1.
 
