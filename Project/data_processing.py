@@ -22,35 +22,20 @@ def rensa_brukar_data(brukare_df):
     brukare_df.rename(columns={'Unnamed: 0': 'Individ'}, inplace=True)
     brukare_df = brukare_df.dropna(subset=['Individ']).copy()
     brukare_df.fillna('-', inplace=True)
-    
+
+    # List of columns that should be converted to boolean values if they exist
+    boolean_columns = [
+        'Kräver körkort', 'Röker', 'Har hund', 'Har katt', 
+        'Kräver >18', 'Kräver man', 'Kräver kvinna', 
+        'Behöver läkemedel', 'Behöver insulin', 'Har stomi', 
+        'Dubbelbemanning', 'Dusch', 'Aktivering'
+    ]
+
     # Convert relevant columns to boolean, only if the column exists
-    if 'Kräver körkort' in brukare_df.columns:
-        brukare_df['Kräver körkort'] = brukare_df['Kräver körkort'].apply(lambda x: x == 'Ja')
-    if 'Röker' in brukare_df.columns:
-        brukare_df['Röker'] = brukare_df['Röker'].apply(lambda x: x == 'Ja')
-    if 'Har hund' in brukare_df.columns:
-        brukare_df['Har hund'] = brukare_df['Har hund'].apply(lambda x: x == 'Ja')
-    if 'Har katt' in brukare_df.columns:
-        brukare_df['Har katt'] = brukare_df['Har katt'].apply(lambda x: x == 'Ja')
-    if 'Kräver >18' in brukare_df.columns:
-        brukare_df['Kräver >18'] = brukare_df['Kräver >18'].apply(lambda x: x == 'Ja')
-    if 'Kräver man' in brukare_df.columns:
-        brukare_df['Kräver man'] = brukare_df['Kräver man'].apply(lambda x: 'Ja' in x)
-    if 'Kräver kvinna' in brukare_df.columns:
-        brukare_df['Kräver kvinna'] = brukare_df['Kräver kvinna'].apply(lambda x: 'Ja' in x)
-    if 'Behöver läkemedel' in brukare_df.columns:
-        brukare_df['Behöver läkemedel'] = brukare_df['Behöver läkemedel'].apply(lambda x: x == 'Ja')
-    if 'Behöver insulin' in brukare_df.columns:
-        brukare_df['Behöver insulin'] = brukare_df['Behöver insulin'].apply(lambda x: x == 'Ja')
-    if 'Har stomi' in brukare_df.columns:
-        brukare_df['Har stomi'] = brukare_df['Har stomi'].apply(lambda x: x == 'Ja')
-    if 'Dubbelbemanning' in brukare_df.columns:
-        brukare_df['Dubbelbemanning'] = brukare_df['Dubbelbemanning'].apply(lambda x: x == 'Ja')
-    if 'Dusch' in brukare_df.columns:
-        brukare_df['Dusch'] = brukare_df['Dusch'].apply(lambda x: 'Ja' in x)
-    if 'Aktivering' in brukare_df.columns:
-        brukare_df['Aktivering'] = brukare_df['Aktivering'].apply(lambda x: 'Ja' in x)
-    
+    for column in boolean_columns:
+        if column in brukare_df.columns:
+            brukare_df[column] = brukare_df[column].apply(lambda x: 'Ja' in str(x))
+
     # Add constraints as a combined string to be used in optimization
     brukare_df['Constraints'] = brukare_df.apply(lambda row: ','.join(filter(None, [
         'license' if row.get('Kräver körkort', False) else '',
@@ -106,38 +91,27 @@ def rensa_medarb_data(medarbetare_df):
 
 def read_addresses(file_path):
     """
-    Reads addresses and coordinates from a file and returns them as a list of tuples.
-    :param file_path: Path to the address file
-    :return: List of tuples containing address and coordinates (latitude, longitude)
+    Reads addresses and coordinates from a file.
     """
     addresses = []
     with open(file_path, 'r') as file:
         for line in file:
             try:
-                # Extract the address and coordinates by splitting the line based on the comma that separates address and coordinates
-                parts = line.split(", ", 1)  # Split only on the first comma
-                address_part = parts[0].split('. ', 1)[1]  # Split by '. ' to remove the initial numbering
-                coordinates = eval(parts[1].strip())  # Evaluate the string to a tuple (64.754, 21.046)
-
-                # Check if the parsed coordinates are valid
+                parts = line.split(", ", 1)
+                address_part = parts[0].split('. ', 1)[1]
+                coordinates = eval(parts[1].strip())
                 if isinstance(coordinates, tuple) and len(coordinates) == 2:
                     addresses.append((address_part, coordinates))
-                else:
-                    print(f"Invalid coordinates format for address: {address_part}")
-            except (SyntaxError, IndexError, NameError, TypeError) as e:
-                print(f"Error parsing coordinates for line: {line.strip()}, Error: {e}")
+            except (SyntaxError, IndexError, NameError, TypeError):
+                continue
     return addresses
-
 
 def assign_addresses_to_brukare(brukare_df, addresses):
     """
     Assigns addresses and coordinates to brukare.
-    :param brukare_df: DataFrame of brukare
-    :param addresses: List of tuples containing addresses and coordinates
-    :return: Updated brukare DataFrame with addresses
     """
     if len(addresses) < len(brukare_df):
-        raise ValueError("Not enough addresses for all brukare. Please add more addresses.")
+        raise ValueError("Not enough addresses for all brukare.")
     
     for i, (address, coordinates) in enumerate(addresses):
         if i < len(brukare_df):
@@ -146,4 +120,3 @@ def assign_addresses_to_brukare(brukare_df, addresses):
             brukare_df.at[i, 'Longitude'] = coordinates[1]
     
     return brukare_df
-
