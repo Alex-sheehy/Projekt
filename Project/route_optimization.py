@@ -147,7 +147,7 @@ def optimize_routes(brukare_df, medarbetare_df, G, depot_location):
     # Add time window constraints for each location except depot.
 
     for location_idx, time_window in enumerate(data["time_windows"]):
-        if location_idx == data["depot"]:
+        if location_idx == depot_idx:
             continue
         index = manager.NodeToIndex(location_idx)
         time_dimension.CumulVar(index).SetRange(time_window[0], time_window[1])
