@@ -82,6 +82,11 @@ PENALTIES = {
     'activation': 40     # Penalty for unmet activation requirements
 }
 
+def calculate_penalty(unmet_constraints):
+    """
+    Calculates the total penalty based on unmet constraints.
+    """
+    return sum(PENALTIES.get(constraint, 0) for constraint in unmet_constraints)
 
 
 # Main function to perform route optimization
