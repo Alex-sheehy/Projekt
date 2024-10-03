@@ -132,6 +132,31 @@ def optimize_routes(brukare_df, medarbetare_df, G, depot_location):
     # Set the cost of travel (objective is to minimize total time)
     routing.SetArcCostEvaluatorOfAllVehicles(transit_callback_index)
 
+    for node_index in range(1, len(customer_locations) + 1):
+        customer_id = node_index  # Assuming customer IDs start from 1
+        allowed_vehicles = []
+        unmet_constraints = []
+
+        # Retrieve the specific constraints from brukare (example logic)
+        customer_services = brukare_df.loc[node_index - 1, 'Constraints'].split(',')  # Example: "medication,smoker"
+        
+        # Check compatibility for each vehicle
+        for vehicle_id in range(num_vehicles):
+            vehicle_services = medarbetare_df.loc[vehicle_id, 'Capabilities'].split(',')  # Example: "medication,license"
+            
+            if vehicle_service_compatibility(vehicle_services, customer_services):
+                allowed_vehicles.append(vehicle_id)
+            else:
+                unmet_constraints = [service for service in customer_services if service not in vehicle_services]
+
+        # Apply penalties if no vehicles can fully serve the customer
+        if not allowed_vehicles:
+            penalty = calculate_penalty(unmet_constraints)
+            routing.AddDisjunction([manager.NodeToIndex(node_index)], penalty)
+        else:
+            # Set allowed vehicles for this customer node
+            routing.VehicleVar(manager.NodeToIndex(node_index)).SetValues(allowed_vehicles)
+    
     # Define search parameters
     search_parameters = pywrapcp.DefaultRoutingSearchParameters()
     search_parameters.first_solution_strategy = (
