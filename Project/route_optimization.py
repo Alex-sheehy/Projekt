@@ -89,6 +89,7 @@ def calculate_penalty(unmet_constraints):
     return sum(PENALTIES.get(constraint, 0) for constraint in unmet_constraints)
 
 
+
 # Main function to perform route optimization
 def optimize_routes(brukare_df, medarbetare_df, G, depot_location):
     """
@@ -132,6 +133,23 @@ def optimize_routes(brukare_df, medarbetare_df, G, depot_location):
     # Set the cost of travel (objective is to minimize total time)
     routing.SetArcCostEvaluatorOfAllVehicles(transit_callback_index)
 
+    def demand_callback(from_index):
+        return 1  # Each customer represents a "load" of 1.
+
+
+    # Add a demand callback to enforce load balancing
+    demand_callback_index = routing.RegisterUnaryTransitCallback(demand_callback)
+
+    # Add dimension to keep track of the load (number of nodes visited)
+    routing.AddDimensionWithVehicleCapacity(
+        demand_callback_index,
+        0,  # No slack
+        [10] * num_vehicles,  # Maximum capacity for each vehicle (adjust as necessary)
+        True,  # Start cumul to zero
+        "Load"
+    )
+
+
     for node_index in range(1, len(customer_locations) + 1):
         customer_id = node_index  # Assuming customer IDs start from 1
         allowed_vehicles = []
@@ -157,6 +175,8 @@ def optimize_routes(brukare_df, medarbetare_df, G, depot_location):
             # Set allowed vehicles for this customer node
             routing.VehicleVar(manager.NodeToIndex(node_index)).SetValues(allowed_vehicles)
     
+
+
     # Define search parameters
     search_parameters = pywrapcp.DefaultRoutingSearchParameters()
     search_parameters.first_solution_strategy = (
