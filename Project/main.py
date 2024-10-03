@@ -4,6 +4,7 @@ from utils import check_visits
 from route_optimization import *  # Import the optimize_routes function
 import osmnx as ox  # Ensure OSMnx is available for graph creation
 
+
 def main():
     # Load data from Excel file
     data = ladda_data("Project/data/Studentuppgift fiktiv planering.xlsx")

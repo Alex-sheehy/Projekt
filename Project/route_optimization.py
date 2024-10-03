@@ -104,6 +104,73 @@ def optimize_routes(brukare_df, medarbetare_df, G, depot_location):
     num_vehicles = len(medarbetare_df)
     depot_index = 0
 
+    time_windows = [
+        (0, 25200),
+        (25200, 32400),
+        (32400, 39600),
+        (39600, 46800),
+        (46800, 54000),
+        (54000, 61200),
+        (61200, 68400),
+        (25200, 32400),
+        (32400, 39600),
+        (39600, 46800),
+        (46800, 54000),
+        (54000, 61200),
+        (61200, 68400),
+        (25200, 32400),
+        (32400, 39600),
+        (39600, 46800),
+        (46800, 54000),
+        (54000, 61200),
+        (61200, 68400),
+        (25200, 32400),
+        (32400, 39600),
+        (39600, 46800),
+        (46800, 54000),
+        (54000, 61200),
+        (61200, 68400),
+        (25200, 32400),
+        (32400, 39600),
+        (39600, 46800),
+        (46800, 54000),
+        (54000, 61200),
+        (61200, 68400),
+        (25200, 32400),
+        (32400, 39600),
+        (39600, 46800),
+        (46800, 54000),
+        (54000, 61200),
+        (61200, 68400),
+        (25200, 32400),
+        (32400, 39600),
+        (39600, 46800),
+        (46800, 54000),
+        (54000, 61200),
+        (61200, 68400),
+        (25200, 32400),
+        (32400, 39600),
+        (39600, 46800),
+        (46800, 54000),
+        (54000, 61200),
+        (61200, 68400),
+        (25200, 32400),
+        (32400, 39600),
+        (39600, 46800),
+        (46800, 54000),
+        (54000, 61200),
+        (61200, 68400),
+        (25200, 32400),
+        (32400, 39600),
+        (39600, 46800),
+        (46800, 54000),
+        (54000, 61200),
+        (61200, 68400),
+        (25200, 32400),
+        (32400, 39600),
+        (39600, 46800)
+    ]
+
     # Create the routing index manager
     manager = pywrapcp.RoutingIndexManager(len(time_matrix), num_vehicles, depot_index)
 
@@ -136,29 +203,28 @@ def optimize_routes(brukare_df, medarbetare_df, G, depot_location):
     time = "Time"
     routing.AddDimension(
         transit_callback_index,
-        30,  # allow waiting time
-        30,  # maximum time per vehicle
+        60*60,  # allow waiting time 30 min
+        8*60*60,  # maximum time per vehicle 90 min
         False,  # Don't force start cumul to zero.
         time,
     )
-
+    
     time_dimension = routing.GetDimensionOrDie(time)
 
     # Add time window constraints for each location except depot.
 
-    for location_idx, time_window in enumerate(data["time_windows"]):
-        if location_idx == depot_idx:
+    for location_idx, time_window in enumerate(time_windows):
+        if location_idx == depot_index:
             continue
         index = manager.NodeToIndex(location_idx)
         time_dimension.CumulVar(index).SetRange(time_window[0], time_window[1])
     # Add time window constraints for each vehicle start node.
-    depot_idx = 0
     for vehicle_id in range(num_vehicles):
         index = routing.Start(vehicle_id)
         time_dimension.CumulVar(index).SetRange(
-            data["time_windows"][depot_idx][0], data["time_windows"][depot_idx][1]
+            time_windows[0][0], time_windows[0][1]  #Depot time window
         )
-    for i in range(data["num_vehicles"]):
+    for i in range(num_vehicles):
         routing.AddVariableMinimizedByFinalizer(
             time_dimension.CumulVar(routing.Start(i))
         )
@@ -202,6 +268,7 @@ def optimize_routes(brukare_df, medarbetare_df, G, depot_location):
         if not allowed_vehicles:
             penalty = calculate_penalty(unmet_constraints)
             routing.AddDisjunction([manager.NodeToIndex(node_index)], penalty)
+            print(f"No vehicles found that meets constraints for node {node_index}")
         else:
             # Set allowed vehicles for this customer node
             routing.VehicleVar(manager.NodeToIndex(node_index)).SetValues(allowed_vehicles)
@@ -212,7 +279,7 @@ def optimize_routes(brukare_df, medarbetare_df, G, depot_location):
     search_parameters = pywrapcp.DefaultRoutingSearchParameters()
     search_parameters.first_solution_strategy = (
         routing_enums_pb2.FirstSolutionStrategy.PATH_CHEAPEST_ARC)
-    search_parameters.time_limit.seconds = 30
+    search_parameters.time_limit.seconds = 60
 
     # Solve the problem
     solution = routing.SolveWithParameters(search_parameters)
