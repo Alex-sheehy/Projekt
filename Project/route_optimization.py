@@ -49,7 +49,7 @@ def generate_matrices(G, customer_locations, depot_location, default_speed_kph=5
                         # Convert speed to m/s and calculate time for this edge
                         speed_mps = speed_kph * 1000 / 3600  # Convert kph to m/s
                         time = distance / speed_mps  # Time = distance / speed
-                        total_time += time
+                        total_time += time * 1.20
                         total_distance += distance
                     
                     time_row.append(total_time)
@@ -254,12 +254,18 @@ def optimize_routes(brukare_df, medarbetare_df, G, depot_location):
 
     # Solve the problem
     solution = routing.SolveWithParameters(search_parameters)
-    def seconds_to_hhmm(seconds):
+
+    def seconds_to_hhmm(seconds, shift=False):
         """
         Converts seconds to a string in HH:MM format.
+        If shift is True, adds a 7-hour shift to the time.
         """
-        hours = int(seconds // 3600)
-        minutes = int((seconds % 3600) // 60)
+        if shift:
+            total_seconds = seconds + 7 * 3600  # Shift by 7 hours
+        else:
+            total_seconds = seconds
+        hours = int(total_seconds // 3600)
+        minutes = int((total_seconds % 3600) // 60)
         return f"{hours:02d}:{minutes:02d}"
 
     if solution:
@@ -269,6 +275,7 @@ def optimize_routes(brukare_df, medarbetare_df, G, depot_location):
         total_wait_time = 0  # In seconds
         total_service_time = 0  # In seconds
         active_vehicles = 0  # Count of vehicles with actual routes
+
         for vehicle_id in range(num_vehicles):
             index = routing.Start(vehicle_id)
             if routing.IsEnd(solution.Value(routing.NextVar(index))):
@@ -279,100 +286,107 @@ def optimize_routes(brukare_df, medarbetare_df, G, depot_location):
             route_travel_time = 0  # In seconds
             route_wait_time = 0  # In seconds
             route_service_time = 0  # In seconds
-            previous_index = index
+
             while not routing.IsEnd(index):
                 node_index = manager.IndexToNode(index)
                 time_var = time_dimension.CumulVar(index)
-                # Arrival time at current node
-                arrival_time = solution.Value(time_var) - service_times[node_index]
-                arrival_time_formatted = seconds_to_hhmm(arrival_time)
+                arrival_time = solution.Value(time_var)
                 service_time = service_times[node_index]
-                service_time_hours = service_time / 3600
-                # Time window for the node
                 time_window = time_windows[node_index]
-                time_window_start_formatted = seconds_to_hhmm(time_window[0])
-                time_window_end_formatted = seconds_to_hhmm(time_window[1])
-                # Wait time at current node
-                wait_time = max(0, time_window[0] - arrival_time)
-                wait_time_hours = wait_time / 3600
-                route_wait_time += wait_time
-                # Travel time from previous node
-                if previous_index != index:
-                    prev_departure_time = solution.Value(time_dimension.CumulVar(previous_index))
-                    travel_time = arrival_time - prev_departure_time
+
+                plan_output += f"Node {node_index}:\n"
+                plan_output += f"  Arrival Time      : {seconds_to_hhmm(arrival_time, shift=True)}\n"
+
+                next_index = solution.Value(routing.NextVar(index))
+
+                if not routing.IsEnd(next_index):
+                    next_node_index = manager.IndexToNode(next_index)
+                    arrival_time_next = solution.Value(time_dimension.CumulVar(next_index))
+                    travel_time_matrix = time_matrix[node_index][next_node_index]
+
+                    # Calculate departure time based on next arrival time minus travel time
+                    departure_time = arrival_time_next - travel_time_matrix
+
+                    # Ensure departure time is not before service completion
+                    earliest_departure = arrival_time + service_time
+                    if departure_time < earliest_departure:
+                        departure_time = earliest_departure
+
+                    # Calculate wait time
+                    wait_time = departure_time - earliest_departure
+
+                    # Travel time to next node
+                    travel_time = arrival_time_next - departure_time
+
+                    # Accumulate times
+                    route_travel_time += travel_time
+                    route_wait_time += wait_time
+                    route_service_time += service_time
+
+                    # Distance between current node and next node
+                    distance = distance_matrix[node_index][next_node_index]
+                    route_distance += distance
+
+                    # Time window formatting
+                    time_window_start_formatted = seconds_to_hhmm(time_window[0], shift=True)
+                    time_window_end_formatted = seconds_to_hhmm(time_window[1], shift=True)
+
+                    # Append to plan_output
+                    plan_output += (
+                        f"  Departure Time    : {seconds_to_hhmm(departure_time, shift=True)}\n"
+                        f"  Service Time      : {seconds_to_hhmm(service_time)}\n"
+                        f"  Time Window       : [{time_window_start_formatted}, {time_window_end_formatted}]\n"
+                        f"  Travel Time (to next): {seconds_to_hhmm(travel_time)}\n"
+                        f"  Distance (to next)   : {distance:.2f} m\n"
+                        f"  Wait Time         : {seconds_to_hhmm(wait_time)}\n\n"
+                    )
+
                 else:
-                    travel_time = 0
-                travel_time_hours = travel_time / 3600
-                route_travel_time += travel_time
-                # Distance from previous node
-                distance = distance_matrix[manager.IndexToNode(previous_index)][node_index]
-                distance_meters = distance  # Already in meters
-                route_distance += distance_meters
-                # Accumulate service time
-                route_service_time += service_time
-                # Append to plan_output
-                plan_output += (
-                    f"Node {node_index}:\n"
-                    f"  Arrival Time      : {arrival_time_formatted} hrs\n"
-                    f"  Service Time      : {service_time_hours:.2f} hrs\n"
-                    f"  Time Window       : [{time_window_start_formatted}, {time_window_end_formatted}] hrs\n"
-                    f"  Travel Time (Prev): {travel_time_hours:.2f} hrs\n"
-                    f"  Distance (Prev)   : {distance_meters} m\n"
-                    f"  Wait Time         : {wait_time_hours:.2f} hrs\n\n"
-                )
-                # Move to next node
-                previous_index = index
-                index = solution.Value(routing.NextVar(index))
-            # Handle the end node (return to depot)
-            node_index = manager.IndexToNode(index)
-            time_var = time_dimension.CumulVar(index)
-            arrival_time = solution.Value(time_var) - service_times[node_index]
-            arrival_time_formatted = seconds_to_hhmm(arrival_time)
-            # Time window for the depot node
-            time_window = time_windows[node_index]
-            time_window_start_formatted = seconds_to_hhmm(time_window[0])
-            time_window_end_formatted = seconds_to_hhmm(time_window[1])
-            # Wait time at depot (usually zero)
-            wait_time = max(0, time_window[0] - arrival_time)
-            wait_time_hours = wait_time / 3600
-            route_wait_time += wait_time
-            # Travel time from previous node to depot
-            prev_departure_time = solution.Value(time_dimension.CumulVar(previous_index))
-            travel_time = arrival_time - prev_departure_time
-            travel_time_hours = travel_time / 3600
-            route_travel_time += travel_time
-            # Distance from previous node to depot
-            distance = distance_matrix[manager.IndexToNode(previous_index)][node_index]
-            distance_meters = distance  # Already in meters
-            route_distance += distance_meters
-            # Accumulate total route time
+                    # At the last node (depot), no next node
+                    departure_time = arrival_time + service_time
+                    wait_time = 0
+                    route_service_time += service_time
+
+                    time_window_start_formatted = seconds_to_hhmm(time_window[0], shift=True)
+                    time_window_end_formatted = seconds_to_hhmm(time_window[1], shift=True)
+
+                    plan_output += (
+                        f"  Departure Time    : {seconds_to_hhmm(departure_time, shift=True)}\n"
+                        f"  Service Time      : {seconds_to_hhmm(service_time)}\n"
+                        f"  Time Window       : [{time_window_start_formatted}, {time_window_end_formatted}]\n"
+                        f"  Wait Time         : {seconds_to_hhmm(wait_time)}\n\n"
+                    )
+
+                index = next_index
+
+            # Compute total route time
             route_total_time_seconds = route_travel_time + route_wait_time + route_service_time
-            route_time_hours = route_total_time_seconds / 3600
-            # Append route summary
+
             plan_output += (
                 f"--- Route Summary for Vehicle {vehicle_id + 1} ---\n"
-                f"Total Route Time : {route_time_hours:.2f} hours\n"
+                f"Total Route Time : {seconds_to_hhmm(route_total_time_seconds)}\n"
                 f"Total Distance    : {route_distance:.0f} meters\n"
-                f"Total Travel Time : {route_travel_time / 3600:.2f} hours\n"
-                f"Total Wait Time   : {route_wait_time / 3600:.2f} hours\n"
-                f"Total Service Time: {route_service_time / 3600:.2f} hours\n\n"
+                f"Total Travel Time : {seconds_to_hhmm(route_travel_time)}\n"
+                f"Total Wait Time   : {seconds_to_hhmm(route_wait_time)}\n"
+                f"Total Service Time: {seconds_to_hhmm(route_service_time)}\n\n"
             )
             print(plan_output)
+
             # Accumulate totals
             total_time += route_total_time_seconds
             total_distance += route_distance
             total_travel_time += route_travel_time
             total_wait_time += route_wait_time
             total_service_time += route_service_time
+
         # Overall summary
-        total_time_hours = total_time / 3600
         print(f"=== Overall Summary ===")
         print(f"Total Active Vehicles  : {active_vehicles}")
-        print(f"Total Time of All Routes: {total_time_hours:.2f} hours")
+        print(f"Total Time of All Routes: {seconds_to_hhmm(total_time)}")
         print(f"Total Distance of All Routes: {total_distance:.0f} meters")
-        print(f"Total Travel Time       : {total_travel_time / 3600:.2f} hours")
-        print(f"Total Wait Time         : {total_wait_time / 3600:.2f} hours")
-        print(f"Total Service Time      : {total_service_time / 3600:.2f} hours")
+        print(f"Total Travel Time       : {seconds_to_hhmm(total_travel_time)}")
+        print(f"Total Wait Time         : {seconds_to_hhmm(total_wait_time)}")
+        print(f"Total Service Time      : {seconds_to_hhmm(total_service_time)}")
         # Calculate average speed
         if total_travel_time > 0:
             average_speed = (total_distance / total_travel_time) * 3.6  # m/s to km/h
@@ -381,4 +395,3 @@ def optimize_routes(brukare_df, medarbetare_df, G, depot_location):
             print("Average Speed           : N/A (No routes found)")
     else:
         print("No solution found!")
-
