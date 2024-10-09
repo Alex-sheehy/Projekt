@@ -267,10 +267,10 @@ def optimize_routes(brukare_df, medarbetare_df, G, depot_location):
         total_distance = 0  # In meters
         total_travel_time = 0  # In seconds
         total_wait_time = 0  # In seconds
+        total_service_time = 0  # In seconds
         active_vehicles = 0  # Count of vehicles with actual routes
         for vehicle_id in range(num_vehicles):
             index = routing.Start(vehicle_id)
-            # Check if the vehicle has any customers assigned
             if routing.IsEnd(solution.Value(routing.NextVar(index))):
                 continue  # Skip vehicles with no assignments
             active_vehicles += 1
@@ -278,37 +278,38 @@ def optimize_routes(brukare_df, medarbetare_df, G, depot_location):
             route_distance = 0  # In meters
             route_travel_time = 0  # In seconds
             route_wait_time = 0  # In seconds
+            route_service_time = 0  # In seconds
             previous_index = index
             while not routing.IsEnd(index):
                 node_index = manager.IndexToNode(index)
                 time_var = time_dimension.CumulVar(index)
-                arrival_time = solution.Min(time_var)
+                # Arrival time at current node
+                arrival_time = solution.Value(time_var) - service_times[node_index]
                 arrival_time_formatted = seconds_to_hhmm(arrival_time)
                 service_time = service_times[node_index]
                 service_time_hours = service_time / 3600
-                # Get time window for the node and convert to HH:MM
+                # Time window for the node
                 time_window = time_windows[node_index]
                 time_window_start_formatted = seconds_to_hhmm(time_window[0])
                 time_window_end_formatted = seconds_to_hhmm(time_window[1])
-                # Calculate wait time at current node
-                if node_index != depot_index:
-                    arrival_before_service = arrival_time - service_time
-                    wait_time = max(0, time_window[0] - arrival_before_service)
-                else:
-                    wait_time = 0  # Typically, no wait time at depot
+                # Wait time at current node
+                wait_time = max(0, time_window[0] - arrival_time)
                 wait_time_hours = wait_time / 3600
                 route_wait_time += wait_time
-                # Calculate travel time from previous node to current node
+                # Travel time from previous node
                 if previous_index != index:
-                    travel_time = time_matrix[manager.IndexToNode(previous_index)][node_index]
+                    prev_departure_time = solution.Value(time_dimension.CumulVar(previous_index))
+                    travel_time = arrival_time - prev_departure_time
                 else:
                     travel_time = 0
                 travel_time_hours = travel_time / 3600
                 route_travel_time += travel_time
-                # Get distance from previous node to current node
+                # Distance from previous node
                 distance = distance_matrix[manager.IndexToNode(previous_index)][node_index]
                 distance_meters = distance  # Already in meters
                 route_distance += distance_meters
+                # Accumulate service time
+                route_service_time += service_time
                 # Append to plan_output
                 plan_output += (
                     f"Node {node_index}:\n"
@@ -325,43 +326,36 @@ def optimize_routes(brukare_df, medarbetare_df, G, depot_location):
             # Handle the end node (return to depot)
             node_index = manager.IndexToNode(index)
             time_var = time_dimension.CumulVar(index)
-            arrival_time = solution.Min(time_var)
+            arrival_time = solution.Value(time_var) - service_times[node_index]
             arrival_time_formatted = seconds_to_hhmm(arrival_time)
-            # Get time window for the depot node and convert to HH:MM
+            # Time window for the depot node
             time_window = time_windows[node_index]
             time_window_start_formatted = seconds_to_hhmm(time_window[0])
             time_window_end_formatted = seconds_to_hhmm(time_window[1])
-            # Calculate wait time at depot if necessary (usually zero)
-            wait_time = 0
+            # Wait time at depot (usually zero)
+            wait_time = max(0, time_window[0] - arrival_time)
             wait_time_hours = wait_time / 3600
             route_wait_time += wait_time
-            # Calculate travel time from previous node to depot
-            travel_time = time_matrix[manager.IndexToNode(previous_index)][node_index]
+            # Travel time from previous node to depot
+            prev_departure_time = solution.Value(time_dimension.CumulVar(previous_index))
+            travel_time = arrival_time - prev_departure_time
             travel_time_hours = travel_time / 3600
             route_travel_time += travel_time
-            # Get distance from previous node to depot
+            # Distance from previous node to depot
             distance = distance_matrix[manager.IndexToNode(previous_index)][node_index]
             distance_meters = distance  # Already in meters
             route_distance += distance_meters
-            # Append to plan_output
-            plan_output += (
-                f"Node {node_index} (Return to Depot):\n"
-                f"  Arrival Time      : {arrival_time_formatted} hrs\n"
-                f"  Time Window       : [{time_window_start_formatted}, {time_window_end_formatted}] hrs\n"
-                f"  Travel Time (Prev): {travel_time_hours:.2f} hrs\n"
-                f"  Distance (Prev)   : {distance_meters} m\n"
-                f"  Wait Time         : {wait_time_hours:.2f} hrs\n\n"
-            )
-            # Calculate total route time in seconds
-            route_total_time_seconds = route_travel_time + route_wait_time
-            # Append route summary
+            # Accumulate total route time
+            route_total_time_seconds = route_travel_time + route_wait_time + route_service_time
             route_time_hours = route_total_time_seconds / 3600
+            # Append route summary
             plan_output += (
                 f"--- Route Summary for Vehicle {vehicle_id + 1} ---\n"
                 f"Total Route Time : {route_time_hours:.2f} hours\n"
                 f"Total Distance    : {route_distance:.0f} meters\n"
                 f"Total Travel Time : {route_travel_time / 3600:.2f} hours\n"
-                f"Total Wait Time   : {route_wait_time / 3600:.2f} hours\n\n"
+                f"Total Wait Time   : {route_wait_time / 3600:.2f} hours\n"
+                f"Total Service Time: {route_service_time / 3600:.2f} hours\n\n"
             )
             print(plan_output)
             # Accumulate totals
@@ -369,15 +363,19 @@ def optimize_routes(brukare_df, medarbetare_df, G, depot_location):
             total_distance += route_distance
             total_travel_time += route_travel_time
             total_wait_time += route_wait_time
-        # Convert total_time to HH:MM
-        total_time_formatted = seconds_to_hhmm(int(total_time))
+            total_service_time += route_service_time
+        # Overall summary
+        total_time_hours = total_time / 3600
         print(f"=== Overall Summary ===")
         print(f"Total Active Vehicles  : {active_vehicles}")
-        print(f"Total Time of All Routes: {total_time_formatted} hrs")
+        print(f"Total Time of All Routes: {total_time_hours:.2f} hours")
         print(f"Total Distance of All Routes: {total_distance:.0f} meters")
-        # Calculate average speed in km/h
-        if total_time > 0:
-            average_speed = (total_distance / total_time) * 3.6  # m/s to km/h
+        print(f"Total Travel Time       : {total_travel_time / 3600:.2f} hours")
+        print(f"Total Wait Time         : {total_wait_time / 3600:.2f} hours")
+        print(f"Total Service Time      : {total_service_time / 3600:.2f} hours")
+        # Calculate average speed
+        if total_travel_time > 0:
+            average_speed = (total_distance / total_travel_time) * 3.6  # m/s to km/h
             print(f"Average Speed           : {average_speed:.2f} km/h")
         else:
             print("Average Speed           : N/A (No routes found)")
