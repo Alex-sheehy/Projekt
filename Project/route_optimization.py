@@ -1,6 +1,7 @@
 import osmnx as ox
 import networkx as nx
 from ortools.constraint_solver import pywrapcp, routing_enums_pb2
+import random
 
 # Function to generate the time and distance matrix using distance and speed
 def generate_matrices(G, customer_locations, depot_location, default_speed_kph=50):
@@ -48,7 +49,7 @@ def generate_matrices(G, customer_locations, depot_location, default_speed_kph=5
                         # Convert speed to m/s and calculate time for this edge
                         speed_mps = speed_kph * 1000 / 3600  # Convert kph to m/s
                         time = distance / speed_mps  # Time = distance / speed
-                        total_time += time
+                        total_time += time * 1.20
                         total_distance += distance
                     
                     time_row.append(total_time)
@@ -66,26 +67,26 @@ def generate_matrices(G, customer_locations, depot_location, default_speed_kph=5
 def vehicle_service_compatibility(vehicle_services, customer_services):
     return all(service in vehicle_services for service in customer_services)
 
-PENALTIES = {
-    'license': 100,      # High penalty for lack of license
-    'smoker': 10,        # Lower penalty for smoker presence
-    'dog': 20,           # Penalty for dogs
-    'cat': 20,           # Penalty for cats
-    '>18': 50,           # Penalty if employee is not >18
-    'man': 70,           # High penalty for gender requirement not met
-    'woman': 70,         # High penalty for gender requirement not met
-    'medication': 80,    # High penalty for missing medication requirement
-    'insulin': 80,       # High penalty for missing insulin requirement
-    'stoma': 80,         # High penalty for missing stoma requirement
-    'double_staffing': 90, # High penalty for double staffing not met
-    'shower': 60,        # Penalty for unmet shower requirements
-    'activation': 40     # Penalty for unmet activation requirements
-}
 
 def calculate_penalty(unmet_constraints):
     """
     Calculates the total penalty based on unmet constraints.
     """
+    PENALTIES = {
+        'license': 100,      # High penalty for lack of license
+        'smoker': 10,        # Lower penalty for smoker presence
+        'dog': 20,           # Penalty for dogs
+        'cat': 20,           # Penalty for cats
+        '>18': 50,           # Penalty if employee is not >18
+        'man': 70,           # High penalty for gender requirement not met
+        'woman': 70,         # High penalty for gender requirement not met
+        'medication': 80,    # High penalty for missing medication requirement
+        'insulin': 80,       # High penalty for missing insulin requirement
+        'stoma': 80,         # High penalty for missing stoma requirement
+        'double_staffing': 90, # High penalty for double staffing not met
+        'shower': 60,        # Penalty for unmet shower requirements
+        'activation': 40     # Penalty for unmet activation requirements
+    }
     return sum(PENALTIES.get(constraint, 0) for constraint in unmet_constraints)
 
 
@@ -93,17 +94,53 @@ def calculate_penalty(unmet_constraints):
 # Main function to perform route optimization
 def optimize_routes(brukare_df, medarbetare_df, G, depot_location):
     """
-    Optimizes routes for vehicles to visit customers, ensuring proper time windows and vehicle distribution.
+    Optimizes routes for vehicles to visit customers, calculating travel times and distances dynamically.
     """
     # Generate customer locations from brukare data
     customer_locations = list(zip(brukare_df['Latitude'], brukare_df['Longitude']))
-    time_windows = brukare_df['time_windows'].tolist()  # Extract the time windows
-
+    
     # Generate the time and distance matrices based on distance / speed calculations
     time_matrix, distance_matrix, nodes = generate_matrices(G, customer_locations, depot_location)
 
     num_vehicles = len(medarbetare_df)
     depot_index = 0
+
+    num_nodes = len(nodes)
+
+    time_window_categories = [
+        (0 * 3600, 2 * 3600),    # 7:00 - 9:00
+        (2 * 3600, 4 * 3600),   # 9:00 - 11:00
+        (4 * 3600, 6 * 3600),  # 11:00 - 13:00
+        (6 * 3600, 8 * 3600),  # 13:00 - 15:00
+        (8 * 3600, 10 * 3600),  # 15:00 - 17:00
+        (10 * 3600, 12 * 3600),  # 17:00 - 19:00
+        (12 * 3600, 14 * 3600)   # 19:00 - 21:00
+    ]
+    # Initialize the time_windows list
+    time_windows = []
+
+    # Assign time windows to each node, kan använda info från brukare_df istället
+    for idx in range(num_nodes):
+        if idx == depot_index:
+            # Time window for the depot (e.g., open all day)
+            time_windows.append((0, 15 * 3600))
+        else:
+            customer_idx = idx - 1  
+            category = customer_idx % len(time_window_categories)
+            time_window = time_window_categories[category]
+            time_windows.append(time_window)
+
+    service_times = [0]
+
+    for i in range(1,num_nodes):
+        service_time_minutes = random.randint(20,40)
+        service_times.append(service_time_minutes * 60)
+
+    # Append customer service times from brukare_df
+    #service_times.extend(brukare_df['ServiceTime'].tolist())
+
+    # Convert service times from minutes to seconds
+    #service_times = [time * 60 for time in service_times]
 
     # Create the routing index manager
     manager = pywrapcp.RoutingIndexManager(len(time_matrix), num_vehicles, depot_index)
@@ -115,104 +152,246 @@ def optimize_routes(brukare_df, medarbetare_df, G, depot_location):
     def time_callback(from_index, to_index):
         from_node = manager.IndexToNode(from_index)
         to_node = manager.IndexToNode(to_index)
-        return int(time_matrix[from_node][to_node])
+        travel_time = int(time_matrix[from_node][to_node])
+        service_time = int(service_times[from_node])
+        return travel_time + service_time
 
     # Define the distance callback function
     def distance_callback(from_index, to_index):
         from_node = manager.IndexToNode(from_index)
         to_node = manager.IndexToNode(to_index)
-        return int(distance_matrix[from_node][to_node])
+        distance = int(distance_matrix[from_node][to_node])
+        return distance
 
-    # Register the time and distance callbacks
+    # Register the time callback
     transit_callback_index = routing.RegisterTransitCallback(time_callback)
+    
+    # Register the distance callback (if you need to optimize based on distance)
     distance_callback_index = routing.RegisterTransitCallback(distance_callback)
 
     # Set the cost of travel (objective is to minimize total time)
     routing.SetArcCostEvaluatorOfAllVehicles(transit_callback_index)
 
-    # Add time window constraints for each location except depot
     time = "Time"
     routing.AddDimension(
         transit_callback_index,
-        30,  # allow waiting time
-        1440,  # maximum time per vehicle (1440 minutes = 24 hours)
-        False,  # Don't force start cumul to zero.
+        2 * 3600,  # allow waiting time 
+        15*3600,  # maximum time per vehicle 
+        True,  
         time,
     )
-
+    
     time_dimension = routing.GetDimensionOrDie(time)
 
-    # Adjust time windows for each location (offsetting by 480 minutes for an 8:00 start)
-    for location_idx, time_window in enumerate(time_windows):
-        if location_idx == depot_index:
-            continue
-        index = manager.NodeToIndex(location_idx)
-        start, end = time_window
-        adjusted_start = start + 480  # Offset by 480 minutes (8:00 AM)
-        adjusted_end = end + 480      # Offset by 480 minutes (start of working day)
-        time_dimension.CumulVar(index).SetRange(adjusted_start, adjusted_end)
+    # Add time window constraints for each location except depot.
 
-    # Add time window constraints for each vehicle start node (depot)
+    for location_idx, time_window in enumerate(time_windows):
+        index = manager.NodeToIndex(location_idx)
+        time_dimension.CumulVar(index).SetRange(time_window[0], time_window[1])
+
+    # Add time window constraints for each vehicle start node.
     for vehicle_id in range(num_vehicles):
         index = routing.Start(vehicle_id)
-        time_dimension.CumulVar(index).SetRange(480, 1320)  # Vehicles can start between 8:00 and 22:00
+        time_dimension.CumulVar(index).SetRange(
+            time_windows[depot_index][0], time_windows[depot_index][1]  #Depot time window
+        )
 
-    # Add capacity constraints to balance work among vehicles
+    for i in range(num_vehicles):
+        routing.AddVariableMinimizedByFinalizer(
+            time_dimension.CumulVar(routing.Start(i))
+        )
+        routing.AddVariableMinimizedByFinalizer(time_dimension.CumulVar(routing.End(i)))
+
     def demand_callback(from_index):
-        # Each customer is counted as 1 unit of demand (adjust as necessary)
-        return 1
+        return 1  # Each customer represents a "load" of 1.
 
+
+    # Add a demand callback to enforce load balancing
     demand_callback_index = routing.RegisterUnaryTransitCallback(demand_callback)
 
-    # Set vehicle capacities (assuming each vehicle can visit up to 10 customers)
-    vehicle_capacities = [10] * num_vehicles
+    # Add dimension to keep track of the load (number of nodes visited)
     routing.AddDimensionWithVehicleCapacity(
-        demand_callback_index,    # Demand callback
-        0,                        # No slack
-        vehicle_capacities,       # Vehicle capacities
-        True,                     # Start cumul to zero
-        "Capacity"
+        demand_callback_index,
+        0,  # No slack
+        [10] * num_vehicles,  # Maximum capacity for each vehicle (adjust as necessary)
+        True,  # Start cumul to zero
+        "Load"
     )
+
+
+    for node_index in range(1, len(customer_locations) + 1):
+        customer_id = node_index  # Assuming customer IDs start from 1
+        allowed_vehicles = []
+        unmet_constraints = []
+
+        # Retrieve the specific constraints from brukare (example logic)
+        customer_services = brukare_df.loc[node_index - 1, 'Constraints'].split(',')  # Example: "medication,smoker"
+        
+        # Check compatibility for each vehicle
+        for vehicle_id in range(num_vehicles):
+            vehicle_services = medarbetare_df.loc[vehicle_id, 'Capabilities'].split(',')  # Example: "medication,license"
+            
+            if vehicle_service_compatibility(vehicle_services, customer_services):
+                allowed_vehicles.append(vehicle_id)
+            else:
+                unmet_constraints = [service for service in customer_services if service not in vehicle_services]
+
+        # Apply penalties if no vehicles can fully serve the customer
+        if not allowed_vehicles:
+            penalty = calculate_penalty(unmet_constraints)
+            routing.AddDisjunction([manager.NodeToIndex(node_index)], penalty)
+        else:
+            # Set allowed vehicles for this customer node
+            routing.VehicleVar(manager.NodeToIndex(node_index)).SetValues(allowed_vehicles)
+    
+
 
     # Define search parameters
     search_parameters = pywrapcp.DefaultRoutingSearchParameters()
-    search_parameters.first_solution_strategy = routing_enums_pb2.FirstSolutionStrategy.PATH_CHEAPEST_ARC
-    search_parameters.time_limit.seconds = 30
+    search_parameters.first_solution_strategy = (
+        routing_enums_pb2.FirstSolutionStrategy.PATH_CHEAPEST_ARC)
+    search_parameters.time_limit.seconds = 120
 
     # Solve the problem
     solution = routing.SolveWithParameters(search_parameters)
 
-    # Output the solution if found
+    def seconds_to_hhmm(seconds, shift=False):
+        """
+        Converts seconds to a string in HH:MM format.
+        If shift is True, adds a 7-hour shift to the time.
+        """
+        if shift:
+            total_seconds = seconds + 7 * 3600  # Shift by 7 hours
+        else:
+            total_seconds = seconds
+        hours = int(total_seconds // 3600)
+        minutes = int((total_seconds % 3600) // 60)
+        return f"{hours:02d}:{minutes:02d}"
+
     if solution:
-        total_time = 0
-        total_distance = 0
+        total_time = 0  # In seconds
+        total_distance = 0  # In meters
+        total_travel_time = 0  # In seconds
+        total_wait_time = 0  # In seconds
+        total_service_time = 0  # In seconds
+        active_vehicles = 0  # Count of vehicles with actual routes
+
         for vehicle_id in range(num_vehicles):
             index = routing.Start(vehicle_id)
-            plan_output = f"Route for vehicle {vehicle_id + 1}:\n"
-            route_time = 0
-            route_distance = 0
+            if routing.IsEnd(solution.Value(routing.NextVar(index))):
+                continue  # Skip vehicles with no assignments
+            active_vehicles += 1
+            plan_output = f"--- Route for Vehicle {vehicle_id + 1} ---\n"
+            route_distance = 0  # In meters
+            route_travel_time = 0  # In seconds
+            route_wait_time = 0  # In seconds
+            route_service_time = 0  # In seconds
+
             while not routing.IsEnd(index):
                 node_index = manager.IndexToNode(index)
-                # Get the time dimension for this node
                 time_var = time_dimension.CumulVar(index)
-                arrival_time = solution.Min(time_var)
-                # Add 8 hours (480 minutes) to display the time correctly
-                corrected_time = arrival_time + 480
-                plan_output += f" {node_index} (Arrival: {arrival_time // 60}:{arrival_time % 60:02d}) ->"
-                previous_index = index
-                index = solution.Value(routing.NextVar(index))
-                route_time += routing.GetArcCostForVehicle(previous_index, index, vehicle_id)
-                route_distance += distance_callback(previous_index, index)
-            plan_output += f" {manager.IndexToNode(index)}\n"
-            plan_output += f"Time of the route: {route_time} seconds\n"
-            plan_output += f"Distance of the route: {route_distance} meters\n"
+                arrival_time = solution.Value(time_var)
+                service_time = service_times[node_index]
+                time_window = time_windows[node_index]
+
+                plan_output += f"Node {node_index}:\n"
+                plan_output += f"  Arrival Time      : {seconds_to_hhmm(arrival_time, shift=True)}\n"
+
+                next_index = solution.Value(routing.NextVar(index))
+
+                if not routing.IsEnd(next_index):
+                    next_node_index = manager.IndexToNode(next_index)
+                    arrival_time_next = solution.Value(time_dimension.CumulVar(next_index))
+                    travel_time_matrix = time_matrix[node_index][next_node_index]
+
+                    # Calculate departure time based on next arrival time minus travel time
+                    departure_time = arrival_time_next - travel_time_matrix
+
+                    # Ensure departure time is not before service completion
+                    earliest_departure = arrival_time + service_time
+                    if departure_time < earliest_departure:
+                        departure_time = earliest_departure
+
+                    # Calculate wait time
+                    wait_time = departure_time - earliest_departure
+
+                    # Travel time to next node
+                    travel_time = arrival_time_next - departure_time
+
+                    # Accumulate times
+                    route_travel_time += travel_time
+                    route_wait_time += wait_time
+                    route_service_time += service_time
+
+                    # Distance between current node and next node
+                    distance = distance_matrix[node_index][next_node_index]
+                    route_distance += distance
+
+                    # Time window formatting
+                    time_window_start_formatted = seconds_to_hhmm(time_window[0], shift=True)
+                    time_window_end_formatted = seconds_to_hhmm(time_window[1], shift=True)
+
+                    # Append to plan_output
+                    plan_output += (
+                        f"  Departure Time    : {seconds_to_hhmm(departure_time, shift=True)}\n"
+                        f"  Service Time      : {seconds_to_hhmm(service_time)}\n"
+                        f"  Time Window       : [{time_window_start_formatted}, {time_window_end_formatted}]\n"
+                        f"  Travel Time (to next): {seconds_to_hhmm(travel_time)}\n"
+                        f"  Distance (to next)   : {distance:.2f} m\n"
+                        f"  Wait Time         : {seconds_to_hhmm(wait_time)}\n\n"
+                    )
+
+                else:
+                    # At the last node (depot), no next node
+                    departure_time = arrival_time + service_time
+                    wait_time = 0
+                    route_service_time += service_time
+
+                    time_window_start_formatted = seconds_to_hhmm(time_window[0], shift=True)
+                    time_window_end_formatted = seconds_to_hhmm(time_window[1], shift=True)
+
+                    plan_output += (
+                        f"  Departure Time    : {seconds_to_hhmm(departure_time, shift=True)}\n"
+                        f"  Service Time      : {seconds_to_hhmm(service_time)}\n"
+                        f"  Time Window       : [{time_window_start_formatted}, {time_window_end_formatted}]\n"
+                        f"  Wait Time         : {seconds_to_hhmm(wait_time)}\n\n"
+                    )
+
+                index = next_index
+
+            # Compute total route time
+            route_total_time_seconds = route_travel_time + route_wait_time + route_service_time
+
+            plan_output += (
+                f"--- Route Summary for Vehicle {vehicle_id + 1} ---\n"
+                f"Total Route Time : {seconds_to_hhmm(route_total_time_seconds)}\n"
+                f"Total Distance    : {route_distance:.0f} meters\n"
+                f"Total Travel Time : {seconds_to_hhmm(route_travel_time)}\n"
+                f"Total Wait Time   : {seconds_to_hhmm(route_wait_time)}\n"
+                f"Total Service Time: {seconds_to_hhmm(route_service_time)}\n\n"
+            )
             print(plan_output)
-            total_time += route_time
+
+            # Accumulate totals
+            total_time += route_total_time_seconds
             total_distance += route_distance
-        print(f"Total time of all routes: {total_time} seconds")
-        print(f"Total distance of all routes: {total_distance} meters")
-        print(f"Average speed: {total_distance/total_time * 3.6}")
+            total_travel_time += route_travel_time
+            total_wait_time += route_wait_time
+            total_service_time += route_service_time
+
+        # Overall summary
+        print(f"=== Overall Summary ===")
+        print(f"Total Active Vehicles  : {active_vehicles}")
+        print(f"Total Time of All Routes: {seconds_to_hhmm(total_time)}")
+        print(f"Total Distance of All Routes: {total_distance:.0f} meters")
+        print(f"Total Travel Time       : {seconds_to_hhmm(total_travel_time)}")
+        print(f"Total Wait Time         : {seconds_to_hhmm(total_wait_time)}")
+        print(f"Total Service Time      : {seconds_to_hhmm(total_service_time)}")
+        # Calculate average speed
+        if total_travel_time > 0:
+            average_speed = (total_distance / total_travel_time) * 3.6  # m/s to km/h
+            print(f"Average Speed           : {average_speed:.2f} km/h")
+        else:
+            print("Average Speed           : N/A (No routes found)")
     else:
         print("No solution found!")
-
-

@@ -146,30 +146,3 @@ def assign_addresses_to_brukare(brukare_df, addresses):
             brukare_df.at[i, 'Longitude'] = coordinates[1]
     
     return brukare_df
-
-def add_time_windows(brukare_df):
-    """
-    Add a 'time_windows' column to the brukare DataFrame based on the time period they need to be visited.
-    Time periods include 'Morgon', 'Förmiddag', 'Lunch', 'Eftermiddag', 'Middag', 'Tidig kväll', 'Sen kväll'.
-    Each time period is mapped to a specific time window (start and end time).
-    """
-    
-    # Define the time windows for each time period (hours of the day)
-    time_window_dict = {
-        "Morgon": (8 * 60, 10 * 60),       # From 8:00 to 10:00 (in minutes)
-        "Förmiddag": (10 * 60, 12 * 60),   # From 10:00 to 12:00 (in minutes)
-        "Lunch": (12 * 60, 13 * 60),       # From 12:00 to 13:00
-        "Eftermiddag": (13 * 60, 16 * 60), # From 13:00 to 16:00
-        "Middag": (16 * 60, 18 * 60),      # From 16:00 to 18:00
-        "Tidig kväll": (18 * 60, 20 * 60), # From 18:00 to 20:00
-        "Sen kväll": (20 * 60, 22 * 60)    # From 20:00 to 22:00
-    }
-
-    # Add a 'time_windows' column based on the time period (if column 'Tid' exists in brukare_df)
-    if 'Tid' in brukare_df.columns:
-        brukare_df['time_windows'] = brukare_df['Tid'].apply(lambda period: time_window_dict.get(period, (0, 24 * 60)))  # Default: 00:00 to 24:00 if time period is not found
-    else:
-        # Handle case where 'Tid' column doesn't exist or is missing
-        brukare_df['time_windows'] = [(0, 24 * 60)] * len(brukare_df)  # Default: whole day available
-
-    return brukare_df
