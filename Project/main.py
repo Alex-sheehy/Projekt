@@ -2,7 +2,6 @@ from data_processing import ladda_data, rensa_brukar_data, rensa_medarb_data, re
 from route_creation import skapa_brukare_dict, skapa_medarbetare_dict, create_weekly_dict
 from utils import check_visits
 from route_optimization import *  # Import the optimize_routes function
-from route_optimization import *  # Import the optimize_routes function
 import osmnx as ox  # Ensure OSMnx is available for graph creation
 
 
