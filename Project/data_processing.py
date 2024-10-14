@@ -146,4 +146,3 @@ def assign_addresses_to_brukare(brukare_df, addresses):
             brukare_df.at[i, 'Longitude'] = coordinates[1]
     
     return brukare_df
-
