@@ -36,6 +36,7 @@ def main():
 
     # Create a graph for route optimization using OSMnx
     place_name = "Skellefteå, Sweden"
+    coordinates = ()
     G = ox.graph_from_place(place_name, network_type='drive')
     G = ox.utils_graph.get_largest_component(G, strongly=True)
 
