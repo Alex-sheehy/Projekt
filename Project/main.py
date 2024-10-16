@@ -27,6 +27,5 @@ def main():
 
     # Perform route optimization based on the provided brukare and medarbetare data
     optimize_routes(brukare_dag_df, medarbetare_df, G, depot_location, antal_medarbetare)
-    print(brukare_dag_df)
 if __name__ == '__main__':
     main()

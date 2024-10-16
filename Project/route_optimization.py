@@ -105,7 +105,6 @@ def optimize_routes(brukare_df, medarbetare_df, G, depot_location, antal_medarbe
     depot_index = 0
 
     num_nodes = len(nodes)
-    print(num_nodes)
 
     # Initialize the time_windows list
     temp = brukare_df["Tidsfönster"].values
@@ -113,10 +112,10 @@ def optimize_routes(brukare_df, medarbetare_df, G, depot_location, antal_medarbe
     time_windows.insert(0, (0, 15 * 3600))
 
 
-    service_times = []
+    service_times = [0]
 
-    for i in range(1,num_nodes):
-        service_times.append(int(brukare_df["Tid"].iloc[i-1]))
+    for i in range(1, num_nodes):
+        service_times.append(int(brukare_df["Tid"].iloc[i-1]) * 60)
         
     print(service_times)
     # Append customer service times from brukare_df
@@ -252,6 +251,9 @@ def optimize_routes(brukare_df, medarbetare_df, G, depot_location, antal_medarbe
         minutes = int((total_seconds % 3600) // 60)
         return f"{hours:02d}:{minutes:02d}"
 
+    # Initialize an output string to collect the printouts
+    output_string = ""
+
     if solution:
         total_time = 0  # In seconds
         total_distance = 0  # In meters
@@ -278,7 +280,12 @@ def optimize_routes(brukare_df, medarbetare_df, G, depot_location, antal_medarbe
                 service_time = service_times[node_index]
                 time_window = time_windows[node_index]
 
-                plan_output += f" {brukare_df['Individ'].iloc[node_index-1]}:\n"
+                if node_index == 0:
+                    individ_name = "Depot"
+                else:
+                    individ_name = brukare_df['Individ'].iloc[node_index-1]
+
+                plan_output += f" {individ_name}:\n"
                 plan_output += f"  Arrival Time      : {seconds_to_hhmm(arrival_time, shift=True)}\n"
 
                 next_index = solution.Value(routing.NextVar(index))
@@ -354,7 +361,8 @@ def optimize_routes(brukare_df, medarbetare_df, G, depot_location, antal_medarbe
                 f"Total Wait Time   : {seconds_to_hhmm(route_wait_time)}\n"
                 f"Total Service Time: {seconds_to_hhmm(route_service_time)}\n\n"
             )
-            print(plan_output)
+            # Append to the output string instead of printing
+            output_string += plan_output
 
             # Accumulate totals
             total_time += route_total_time_seconds
@@ -364,18 +372,29 @@ def optimize_routes(brukare_df, medarbetare_df, G, depot_location, antal_medarbe
             total_service_time += route_service_time
 
         # Overall summary
-        print(f"=== Overall Summary ===")
-        print(f"Total Active Vehicles  : {active_vehicles}")
-        print(f"Total Time of All Routes: {seconds_to_hhmm(total_time)}")
-        print(f"Total Distance of All Routes: {total_distance:.0f} meters")
-        print(f"Total Travel Time       : {seconds_to_hhmm(total_travel_time)}")
-        print(f"Total Wait Time         : {seconds_to_hhmm(total_wait_time)}")
-        print(f"Total Service Time      : {seconds_to_hhmm(total_service_time)}")
+        overall_summary = f"=== Overall Summary ===\n"
+        overall_summary += f"Total Active Vehicles  : {active_vehicles}\n"
+        overall_summary += f"Total Time of All Routes: {seconds_to_hhmm(total_time)}\n"
+        overall_summary += f"Total Distance of All Routes: {total_distance:.0f} meters\n"
+        overall_summary += f"Total Travel Time       : {seconds_to_hhmm(total_travel_time)}\n"
+        overall_summary += f"Total Wait Time         : {seconds_to_hhmm(total_wait_time)}\n"
+        overall_summary += f"Total Service Time      : {seconds_to_hhmm(total_service_time)}\n"
         # Calculate average speed
         if total_travel_time > 0:
             average_speed = (total_distance / total_travel_time) * 3.6  # m/s to km/h
-            print(f"Average Speed           : {average_speed:.2f} km/h")
+            overall_summary += f"Average Speed           : {average_speed:.2f} km/h\n"
         else:
-            print("Average Speed           : N/A (No routes found)")
+            overall_summary += "Average Speed           : N/A (No routes found)\n"
+
+        # Append overall summary to the output string
+        output_string += overall_summary
     else:
-        print("No solution found!")
+        output_string += "No solution found!\n"
+
+    # Print the output_string to the console (optional)
+    print(output_string)
+    
+    # Write the output_string to a text file
+    with open('route_output.txt', 'w') as f:
+        f.write(output_string)
+
