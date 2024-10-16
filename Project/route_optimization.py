@@ -98,7 +98,6 @@ def optimize_routes(brukare_df, medarbetare_df, G, depot_location, antal_medarbe
     """
     # Generate customer locations from brukare data
     customer_locations = list(zip(brukare_df['Latitude'].astype("float"), brukare_df['Longitude'].astype("float")))
-    print(customer_locations)
     # Generate the time and distance matrices based on distance / speed calculations
     time_matrix, distance_matrix, nodes = generate_matrices(G, customer_locations, depot_location)
 
@@ -106,28 +105,20 @@ def optimize_routes(brukare_df, medarbetare_df, G, depot_location, antal_medarbe
     depot_index = 0
 
     num_nodes = len(nodes)
+    print(num_nodes)
 
-    time_window_categories = [
-        (0 * 3600, 2 * 3600),    # 7:00 - 9:00
-        (2 * 3600, 4 * 3600),   # 9:00 - 11:00
-        (4 * 3600, 6 * 3600),  # 11:00 - 13:00
-        (6 * 3600, 8 * 3600),  # 13:00 - 15:00
-        (8 * 3600, 10 * 3600),  # 15:00 - 17:00
-        (10 * 3600, 12 * 3600),  # 17:00 - 19:00
-        (12 * 3600, 14 * 3600)   # 19:00 - 21:00
-    ]
     # Initialize the time_windows list
     temp = brukare_df["Tidsfönster"].values
     time_windows = [ ((int(thing[1].split("-")[0])-7) * 3600, (int(thing[1].split("-")[1])-7) * 3600) for thing in temp]
     time_windows.insert(0, (0, 15 * 3600))
-    print(time_windows)
-    
-    service_times = [0]
+
+
+    service_times = []
 
     for i in range(1,num_nodes):
-        service_time_minutes = random.randint(20,40)
-        service_times.append(service_time_minutes * 60)
-
+        service_times.append(int(brukare_df["Tid"].iloc[i-1]))
+        
+    print(service_times)
     # Append customer service times from brukare_df
     #service_times.extend(brukare_df['ServiceTime'].tolist())
 
@@ -231,6 +222,7 @@ def optimize_routes(brukare_df, medarbetare_df, G, depot_location, antal_medarbe
         # Apply penalties if no vehicles can fully serve the customer
         if not allowed_vehicles:
             penalty = calculate_penalty(unmet_constraints)
+            print(f"{brukare_df['Individ'].iloc[node_index]} has unmet constraints {unmet_constraints}")
             routing.AddDisjunction([manager.NodeToIndex(node_index)], penalty)
         else:
             # Set allowed vehicles for this customer node
@@ -286,7 +278,7 @@ def optimize_routes(brukare_df, medarbetare_df, G, depot_location, antal_medarbe
                 service_time = service_times[node_index]
                 time_window = time_windows[node_index]
 
-                plan_output += f"Node {node_index}:\n"
+                plan_output += f" {brukare_df['Individ'].iloc[node_index-1]}:\n"
                 plan_output += f"  Arrival Time      : {seconds_to_hhmm(arrival_time, shift=True)}\n"
 
                 next_index = solution.Value(routing.NextVar(index))

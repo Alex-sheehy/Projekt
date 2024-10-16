@@ -4,7 +4,7 @@ from utils import check_visits
 from dataframe_creation import dataframe_creation
 from route_optimization import *  # Import the optimize_routes function
 import osmnx as ox  # Ensure OSMnx is available for graph creation
-
+import pandas as pd
 
 def main():
     # Load data from Excel file
@@ -17,15 +17,16 @@ def main():
 
     # Create a graph for route optimization using OSMnx
     place_name = "Skellefteå, Sweden"
-    G = ox.graph_from_place(place_name, network_type='drive')
-    G = ox.utils_graph.truncate.largest_component(G, strongly=True)
+    coordinates = (64.8402, 64.6462, 21.3169, 20.8486)
+    G = ox.graph_from_bbox(bbox=coordinates, network_type='drive');
+    G = ox.utils_graph.truncate.largest_component(G, strongly=True);
 
     depot_location = (64.71128317136987, 21.16924807421642)
 
-    antal_medarbetare = 10
+    antal_medarbetare = 25
 
     # Perform route optimization based on the provided brukare and medarbetare data
     optimize_routes(brukare_dag_df, medarbetare_df, G, depot_location, antal_medarbetare)
-
+    print(brukare_dag_df)
 if __name__ == '__main__':
     main()
