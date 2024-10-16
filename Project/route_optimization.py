@@ -92,17 +92,17 @@ def calculate_penalty(unmet_constraints):
 
 
 # Main function to perform route optimization
-def optimize_routes(brukare_df, medarbetare_df, G, depot_location):
+def optimize_routes(brukare_df, medarbetare_df, G, depot_location, antal_medarbetare):
     """
     Optimizes routes for vehicles to visit customers, calculating travel times and distances dynamically.
     """
     # Generate customer locations from brukare data
-    customer_locations = list(zip(brukare_df['Latitude'], brukare_df['Longitude']))
-    
+    customer_locations = list(zip(brukare_df['Latitude'].astype("float"), brukare_df['Longitude'].astype("float")))
+    print(customer_locations)
     # Generate the time and distance matrices based on distance / speed calculations
     time_matrix, distance_matrix, nodes = generate_matrices(G, customer_locations, depot_location)
 
-    num_vehicles = len(medarbetare_df)
+    num_vehicles = antal_medarbetare
     depot_index = 0
 
     num_nodes = len(nodes)
@@ -117,19 +117,11 @@ def optimize_routes(brukare_df, medarbetare_df, G, depot_location):
         (12 * 3600, 14 * 3600)   # 19:00 - 21:00
     ]
     # Initialize the time_windows list
-    time_windows = []
-
-    # Assign time windows to each node, kan använda info från brukare_df istället
-    for idx in range(num_nodes):
-        if idx == depot_index:
-            # Time window for the depot (e.g., open all day)
-            time_windows.append((0, 15 * 3600))
-        else:
-            customer_idx = idx - 1  
-            category = customer_idx % len(time_window_categories)
-            time_window = time_window_categories[category]
-            time_windows.append(time_window)
-
+    temp = brukare_df["Tidsfönster"].values
+    time_windows = [ ((int(thing[1].split("-")[0])-7) * 3600, (int(thing[1].split("-")[1])-7) * 3600) for thing in temp]
+    time_windows.insert(0, (0, 15 * 3600))
+    print(time_windows)
+    
     service_times = [0]
 
     for i in range(1,num_nodes):

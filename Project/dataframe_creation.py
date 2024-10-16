@@ -48,10 +48,10 @@ def skapa_brukare_df(brukare_df,tidsfönsterna,regex_filters):
             if dubbelbemanning_df["Individ"].str.contains(individ, regex = False).any() == True:
                 dubbel_tid = row[tidsfönster[0]].split('*')
                 #Tar ut den tiden för besöket, hanterar olika format som 2*30 och 30*2
-                if dubbel_tid[0] > dubbel_tid[1]:
-                    riktig_tid = dubbel_tid[0]
+                if int(dubbel_tid[0]) > int(dubbel_tid[1]):
+                    riktig_tid = int(dubbel_tid[0])
                 else:
-                    riktig_tid = dubbel_tid[1]
+                    riktig_tid = int(dubbel_tid[1])
                 #Skapar en rad i dataframe för besöket som ska utföras. 
                 # Det blir dubbla rader nu eftersom det ska vara dubbelbemanning                
                 
@@ -128,9 +128,9 @@ def skapa_brukare_dag_df(brukare_df, brukare_tidsfönster_df, regex):
             #Uppdaterar tiden för besöket
             orginal_besökstid = brukare_tidsfönster_df.loc[
                 (brukare_tidsfönster_df["Tidsfönster"].apply(lambda x: x[0] == "Förmiddag")) & 
-                (brukare_tidsfönster_df["Individ"] == row["Individ"]), "Tid"]
+                (brukare_tidsfönster_df["Individ"] == row["Individ"]), "Tid"].values
             
-            ny_besökstid = orginal_besökstid + dusch_tid
+            ny_besökstid = [int(tid) + dusch_tid for tid in orginal_besökstid]
 
             orginal_constraints = brukare_tidsfönster_df.loc[(
                 brukare_tidsfönster_df["Tidsfönster"].apply(lambda x: x[0] =="Förmiddag")) & (
@@ -180,7 +180,7 @@ def skapa_brukare_dag_df(brukare_df, brukare_tidsfönster_df, regex):
             #Uppdaterar tiden för besöket
             orginal_besökstid = brukare_tidsfönster_df.loc[(
                 brukare_tidsfönster_df["Tidsfönster"].apply(lambda x: x[0]=="Eftermiddag")) & (
-                brukare_tidsfönster_df["Individ"] == row["Individ"]), "Tid"].value
+                brukare_tidsfönster_df["Individ"] == row["Individ"]), "Tid"].values
             
             ny_besökstid = orginal_besökstid + aktiverings_tid
 
@@ -241,13 +241,14 @@ def addera_adress_till_df(fil,brukare_tidsfönster_df):
 
     return brukare_tidsfönster_df
 
-def main():
+def dataframe_creation(dag):
+
+    dag = str(dag)
 
     # Test användning
     data = ladda_data("project/data/Studentuppgift fiktiv planering.xlsx")
     
-    # Data rensning
-    medarbetare_df = rensa_medarb_data(data["medarbetare"])
+    
 
     tidsfönster = [("Morgon","7-9"), ("Förmiddag","9-11"), ("Lunch","11-13"), ("Eftermiddag","13-15"), ("Middag","15-17"), ("Tidig kväll","17-19"), ("Sen kväll","19-21")]
     regex_tid_mönster = [ r'\b[mM]org\b', r'\b[fF]m\b', r'\b[lL]unch\b',  r'\b[eE]m\b', r'\b[mM]iddag\b', 
@@ -258,14 +259,12 @@ def main():
 
     #De olika Regex för de olika dagarana
     #TODO: detta kan göras mer andvändarvänligt med if statement eller mapping 
-    regex_dag_mönster = [r'\b[mM]ån', r'\b[tT]is', r'\b[oO]ns', r'\b[tT]or', r'\b[fF]re']
+    regex_dag_mönster = {"Måndag" : r'\b[mM]ån', "Tisdag" : r'\b[tT]is', "Onsdag" : r'\b[oO]ns', "Torsdag" : r'\b[tT]or', "Fredag" : r'\b[fF]re'}
     
     #Test med en mån dataframe
-    mån_df = skapa_brukare_dag_df(data["brukare"], brukare_tidsfönster_df,r'\b[mM]ån')
+    dag_df = skapa_brukare_dag_df(data["brukare"], brukare_tidsfönster_df, regex_dag_mönster[dag.title()])
     
-    mån_df = addera_adress_till_df("Project/data/UppdateradeAddresser.txt", mån_df)
+    dag_df = addera_adress_till_df("Project/data/UppdateradeAddresser.txt", dag_df)
 
-    print(mån_df[mån_df["Tidsfönster"].apply(lambda x: x[0] == "Eftermiddag")])
+    return dag_df
 
-if __name__ == '__main__':
-    main()
