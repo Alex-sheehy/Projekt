@@ -1,7 +1,24 @@
 import osmnx as ox
 import networkx as nx
 from ortools.constraint_solver import pywrapcp, routing_enums_pb2
+import numpy as np
+import os
 import random
+
+
+
+def save_matrices(time_matrix, distance_matrix, nodes, time_file="time_matrix.npy", distance_file="distance_matrix.npy", nodes_file="nodes.npy"):
+    np.save(time_file, time_matrix)
+    np.save(distance_file, distance_matrix)
+    np.save(nodes_file, nodes)
+
+def load_matrices(time_file="time_matrix.npy", distance_file="distance_matrix.npy", nodes_file="nodes.npy"):
+    time_matrix = np.load(time_file)
+    distance_matrix = np.load(distance_file)
+    nodes = np.load(nodes_file)
+    return time_matrix, distance_matrix, nodes
+
+
 
 # Function to generate the time and distance matrix using distance and speed
 def generate_matrices(G, customer_locations, depot_location, default_speed_kph=50):
@@ -52,7 +69,7 @@ def generate_matrices(G, customer_locations, depot_location, default_speed_kph=5
                         total_time += time * 1.20
                         total_distance += distance
                     
-                    time_row.append(total_time)
+                    time_row.append(total_time + 2 * 60)
                     distance_row.append(total_distance)
                 except nx.NetworkXNoPath:
                     time_row.append(float('inf'))  # If no path exists, set a high penalty time
@@ -73,32 +90,49 @@ def calculate_penalty(unmet_constraints):
     Calculates the total penalty based on unmet constraints.
     """
     PENALTIES = {
-        'license': 100,      # High penalty for lack of license
-        'smoker': 10,        # Lower penalty for smoker presence
-        'dog': 20,           # Penalty for dogs
-        'cat': 20,           # Penalty for cats
-        '>18': 50,           # Penalty if employee is not >18
-        'man': 70,           # High penalty for gender requirement not met
-        'woman': 70,         # High penalty for gender requirement not met
-        'medication': 80,    # High penalty for missing medication requirement
-        'insulin': 80,       # High penalty for missing insulin requirement
-        'stoma': 80,         # High penalty for missing stoma requirement
-        'double_staffing': 90, # High penalty for double staffing not met
-        'shower': 60,        # Penalty for unmet shower requirements
-        'activation': 40     # Penalty for unmet activation requirements
+        'license': 1000,      # High penalty for lack of license
+        'smoker': 100,        # Lower penalty for smoker presence
+        'dog': 200,           # Penalty for dogs
+        'cat': 200,           # Penalty for cats
+        '>18': 5000,           # Penalty if employee is not >18
+        'man': 7000,           # High penalty for gender requirement not met
+        'woman': 7000,         # High penalty for gender requirement not met
+        'medication': 8000,    # High penalty for missing medication requirement
+        'insulin': 8000,       # High penalty for missing insulin requirement
+        'stoma': 800,         # High penalty for missing stoma requirement
+        'double_staffing': 900, # High penalty for double staffing not met
+        'shower': 600,        # Penalty for unmet shower requirements
+        'activation': 400     # Penalty for unmet activation requirements
     }
     return sum(PENALTIES.get(constraint, 0) for constraint in unmet_constraints)
 
 
 
 # Main function to perform route optimization
-def optimize_routes(brukare_df, medarbetare_df, G, depot_location, antal_medarbetare):
+def optimize_routes(brukare_df, medarbetare_df, G, depot_location, antal_medarbetare, time_file="time_matrix.npy", distance_file="distance_matrix.npy", nodes_file="nodes.npy"):
     """
-    Optimizes routes for vehicles to visit customers, calculating travel times and distances dynamically.
+        if os.path.exists(time_file) and os.path.exists(distance_file) and os.path.exists(nodes_file):
+            # Load the saved matrices and nodes using numpy
+            time_matrix, distance_matrix, nodes = load_matrices(time_file, distance_file, nodes_file)
+            print("Loaded matrices from file.")
+
+            customer_locations = [(G.nodes[node]['y'], G.nodes[node]['x']) for node in nodes[1:]]
+
+        else:
+            # Generate customer locations
+            customer_locations = list(zip(brukare_df['Latitude'].astype("float"), brukare_df['Longitude'].astype("float")))
+
+            # Generate matrices (this is computationally expensive)
+            time_matrix, distance_matrix, nodes = generate_matrices(G, customer_locations, depot_location)
+
+            # Save the matrices for future runs
+            save_matrices(time_matrix, distance_matrix, nodes, time_file, distance_file, nodes_file)
+            print("Generated and saved matrices.")
     """
-    # Generate customer locations from brukare data
+
     customer_locations = list(zip(brukare_df['Latitude'].astype("float"), brukare_df['Longitude'].astype("float")))
-    # Generate the time and distance matrices based on distance / speed calculations
+
+    # Generate matrices (this is computationally expensive)
     time_matrix, distance_matrix, nodes = generate_matrices(G, customer_locations, depot_location)
 
     num_vehicles = antal_medarbetare
@@ -116,19 +150,18 @@ def optimize_routes(brukare_df, medarbetare_df, G, depot_location, antal_medarbe
 
     for i in range(1, num_nodes):
         service_times.append(int(brukare_df["Tid"].iloc[i-1]) * 60)
-        
-    print(service_times)
-    # Append customer service times from brukare_df
-    #service_times.extend(brukare_df['ServiceTime'].tolist())
-
-    # Convert service times from minutes to seconds
-    #service_times = [time * 60 for time in service_times]
 
     # Create the routing index manager
     manager = pywrapcp.RoutingIndexManager(len(time_matrix), num_vehicles, depot_index)
 
     # Create the routing model
     routing = pywrapcp.RoutingModel(manager)
+
+    # Set a fixed cost for using each vehicle
+    vehicle_fixed_cost = 10000  # Adjust this value as needed
+
+    for vehicle_id in range(num_vehicles):
+        routing.SetFixedCostOfVehicle(vehicle_fixed_cost, vehicle_id)
 
     # Define the time callback function
     def time_callback(from_index, to_index):
@@ -151,25 +184,29 @@ def optimize_routes(brukare_df, medarbetare_df, G, depot_location, antal_medarbe
     # Register the distance callback (if you need to optimize based on distance)
     distance_callback_index = routing.RegisterTransitCallback(distance_callback)
 
-    # Set the cost of travel (objective is to minimize total time)
-    routing.SetArcCostEvaluatorOfAllVehicles(transit_callback_index)
 
     time = "Time"
     routing.AddDimension(
         transit_callback_index,
-        2 * 3600,  # allow waiting time 
+        int(3600),  # allow waiting time 
         15*3600,  # maximum time per vehicle 
         True,  
         time,
     )
     
     time_dimension = routing.GetDimensionOrDie(time)
-
+    
+    # Set a coefficient for the global span to minimize total route time
+    time_dimension.SetGlobalSpanCostCoefficient(1)  # Adjust the coefficient as needed
+   
     # Add time window constraints for each location except depot.
-
     for location_idx, time_window in enumerate(time_windows):
         index = manager.NodeToIndex(location_idx)
         time_dimension.CumulVar(index).SetRange(time_window[0], time_window[1])
+
+        # Penalize arriving before the start of the time window
+        penalty_amount = 1  # Penalty for each unit (e.g., seconds) of early arrival
+        time_dimension.SetCumulVarSoftLowerBound(index, time_window[0], penalty_amount)
 
     # Add time window constraints for each vehicle start node.
     for vehicle_id in range(num_vehicles):
@@ -192,10 +229,11 @@ def optimize_routes(brukare_df, medarbetare_df, G, depot_location, antal_medarbe
     demand_callback_index = routing.RegisterUnaryTransitCallback(demand_callback)
 
     # Add dimension to keep track of the load (number of nodes visited)
+    stops_per_vehicle = 20
     routing.AddDimensionWithVehicleCapacity(
         demand_callback_index,
         0,  # No slack
-        [10] * num_vehicles,  # Maximum capacity for each vehicle (adjust as necessary)
+        [stops_per_vehicle] * num_vehicles,  # Maximum capacity for each vehicle (adjust as necessary)
         True,  # Start cumul to zero
         "Load"
     )
@@ -221,19 +259,21 @@ def optimize_routes(brukare_df, medarbetare_df, G, depot_location, antal_medarbe
         # Apply penalties if no vehicles can fully serve the customer
         if not allowed_vehicles:
             penalty = calculate_penalty(unmet_constraints)
-            print(f"{brukare_df['Individ'].iloc[node_index]} has unmet constraints {unmet_constraints}")
+            print(f"{brukare_df['Individ'].iloc[node_index-1]} has unmet constraints {unmet_constraints}")
             routing.AddDisjunction([manager.NodeToIndex(node_index)], penalty)
         else:
             # Set allowed vehicles for this customer node
             routing.VehicleVar(manager.NodeToIndex(node_index)).SetValues(allowed_vehicles)
     
-
+    # Set the cost of travel (objective is to minimize total time)
+    routing.SetArcCostEvaluatorOfAllVehicles(transit_callback_index)
 
     # Define search parameters
     search_parameters = pywrapcp.DefaultRoutingSearchParameters()
-    search_parameters.first_solution_strategy = (
-        routing_enums_pb2.FirstSolutionStrategy.PATH_CHEAPEST_ARC)
-    search_parameters.time_limit.seconds = 120
+    search_parameters.first_solution_strategy = routing_enums_pb2.FirstSolutionStrategy.AUTOMATIC
+    search_parameters.local_search_metaheuristic = routing_enums_pb2.LocalSearchMetaheuristic.TABU_SEARCH
+    search_parameters.time_limit.seconds = 600  # Increase time limit to 5 minutes
+    search_parameters.log_search = True
 
     # Solve the problem
     solution = routing.SolveWithParameters(search_parameters)

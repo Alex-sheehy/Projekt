@@ -267,4 +267,3 @@ def dataframe_creation(dag):
     dag_df = addera_adress_till_df("Project/data/UppdateradeAddresser.txt", dag_df)
 
     return dag_df
-

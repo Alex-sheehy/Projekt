@@ -22,10 +22,16 @@ def main():
     G = ox.utils_graph.truncate.largest_component(G, strongly=True);
 
     depot_location = (64.71128317136987, 21.16924807421642)
+    temp_index = len(brukare_dag_df) // 2
+
+
+    fm_df = brukare_dag_df.iloc[:temp_index]
+    em_df = brukare_dag_df.iloc[temp_index:]
+    
+    fm_df.to_excel("fm.xlsx", index=False)
+    em_df.to_excel("em.xlsx", index=False)
 
     antal_medarbetare = 25
-
-    # Perform route optimization based on the provided brukare and medarbetare data
-    optimize_routes(brukare_dag_df, medarbetare_df, G, depot_location, antal_medarbetare)
+    optimize_routes(fm_df, medarbetare_df, G, depot_location, antal_medarbetare)
 if __name__ == '__main__':
     main()
