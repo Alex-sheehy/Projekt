@@ -12,8 +12,11 @@ def main():
     
     medarbetare_df = rensa_medarb_data(data["medarbetare"])
 
+    dag = input("Ange dag för schema: ")
 
-    brukare_dag_df = dataframe_creation("Måndag") 
+    dag = dag.title()
+
+    brukare_dag_df = dataframe_creation(dag) 
 
     # Create a graph for route optimization using OSMnx
     place_name = "Skellefteå, Sweden"
