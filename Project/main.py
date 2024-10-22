@@ -18,6 +18,15 @@ def main():
 
     brukare_dag_df = dataframe_creation(dag) 
 
+    fm_tidsfönster = ["Morgon", "Förmiddag", "Lunch", "Eftermiddag"]
+    em_tidsfönster = ["Middag", "Tidig kväll", "Sen kväll"]
+
+    fm_df = brukare_dag_df[brukare_dag_df["Tidsfönster"].apply(lambda x: x[0] in fm_tidsfönster)]
+    fm_df = fm_df.reset_index(drop=True)
+    em_df = brukare_dag_df[brukare_dag_df["Tidsfönster"].apply(lambda x: x[0] in em_tidsfönster)]
+    em_df = em_df.reset_index(drop=True)
+
+
     # Create a graph for route optimization using OSMnx
     place_name = "Skellefteå, Sweden"
     coordinates = (64.8402, 64.6462, 21.3169, 20.8486)
@@ -27,14 +36,14 @@ def main():
     depot_location = (64.71128317136987, 21.16924807421642)
     temp_index = len(brukare_dag_df) // 2
 
-
-    fm_df = brukare_dag_df.iloc[:temp_index]
-    em_df = brukare_dag_df.iloc[temp_index:]
-    
     fm_df.to_excel("fm.xlsx", index=False)
     em_df.to_excel("em.xlsx", index=False)
 
+    print(em_df)
+
     antal_medarbetare = 25
-    optimize_routes(fm_df, medarbetare_df, G, depot_location, antal_medarbetare)
+    shift_start = 15
+    shift_end = 22
+    optimize_routes(em_df, medarbetare_df, G, depot_location, antal_medarbetare, shift_start, shift_end)
 if __name__ == '__main__':
     main()

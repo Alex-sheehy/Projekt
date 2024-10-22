@@ -90,26 +90,26 @@ def calculate_penalty(unmet_constraints):
     Calculates the total penalty based on unmet constraints.
     """
     PENALTIES = {
-        'license': 1000,      # High penalty for lack of license
-        'smoker': 100,        # Lower penalty for smoker presence
-        'dog': 200,           # Penalty for dogs
-        'cat': 200,           # Penalty for cats
-        '>18': 5000,           # Penalty if employee is not >18
-        'man': 7000,           # High penalty for gender requirement not met
-        'woman': 7000,         # High penalty for gender requirement not met
-        'medication': 8000,    # High penalty for missing medication requirement
-        'insulin': 8000,       # High penalty for missing insulin requirement
-        'stoma': 800,         # High penalty for missing stoma requirement
-        'double_staffing': 900, # High penalty for double staffing not met
-        'shower': 600,        # Penalty for unmet shower requirements
-        'activation': 400     # Penalty for unmet activation requirements
+        'license': 500,      # High penalty for lack of license
+        'smoker': 50,        # Lower penalty for smoker presence
+        'dog': 100,           # Penalty for dogs
+        'cat': 100,           # Penalty for cats
+        '>18': 2500,           # Penalty if employee is not >18
+        'man': 3500,           # High penalty for gender requirement not met
+        'woman': 3500,         # High penalty for gender requirement not met
+        'medication': 4000,    # High penalty for missing medication requirement
+        'insulin': 4000,       # High penalty for missing insulin requirement
+        'stoma': 400,         # High penalty for missing stoma requirement
+        'double_staffing': 450, # High penalty for double staffing not met
+        'shower': 300,        # Penalty for unmet shower requirements
+        'activation': 200     # Penalty for unmet activation requirements
     }
     return sum(PENALTIES.get(constraint, 0) for constraint in unmet_constraints)
 
 
 
 # Main function to perform route optimization
-def optimize_routes(brukare_df, medarbetare_df, G, depot_location, antal_medarbetare, time_file="time_matrix.npy", distance_file="distance_matrix.npy", nodes_file="nodes.npy"):
+def optimize_routes(brukare_df, medarbetare_df, G, depot_location, antal_medarbetare, shift_start, shift_end, time_file="time_matrix.npy", distance_file="distance_matrix.npy", nodes_file="nodes.npy"):
     """
         if os.path.exists(time_file) and os.path.exists(distance_file) and os.path.exists(nodes_file):
             # Load the saved matrices and nodes using numpy
@@ -142,8 +142,8 @@ def optimize_routes(brukare_df, medarbetare_df, G, depot_location, antal_medarbe
 
     # Initialize the time_windows list
     temp = brukare_df["Tidsfönster"].values
-    time_windows = [ ((int(thing[1].split("-")[0])-7) * 3600, (int(thing[1].split("-")[1])-7) * 3600) for thing in temp]
-    time_windows.insert(0, (0, 15 * 3600))
+    time_windows = [ ((int(thing[1].split("-")[0])-shift_start) * 3600, (int(thing[1].split("-")[1])-shift_start) * 3600) for thing in temp]
+    time_windows.insert(0, (0, (shift_end - shift_start) * 3600))
 
 
     service_times = [0]
@@ -189,7 +189,7 @@ def optimize_routes(brukare_df, medarbetare_df, G, depot_location, antal_medarbe
     routing.AddDimension(
         transit_callback_index,
         int(3600),  # allow waiting time 
-        15*3600,  # maximum time per vehicle 
+        (shift_end - shift_start) * 3600,  # maximum time per vehicle 
         True,  
         time,
     )
@@ -284,7 +284,7 @@ def optimize_routes(brukare_df, medarbetare_df, G, depot_location, antal_medarbe
         If shift is True, adds a 7-hour shift to the time.
         """
         if shift:
-            total_seconds = seconds + 7 * 3600  # Shift by 7 hours
+            total_seconds = seconds + shift_start * 3600  # Shift by 7 hours
         else:
             total_seconds = seconds
         hours = int(total_seconds // 3600)

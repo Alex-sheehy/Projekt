@@ -1,716 +1,569 @@
---- Route for Vehicle 5 ---
+--- Route for Vehicle 20 ---
  Depot:
-  Arrival Time      : 07:00
-  Departure Time    : 07:00
+  Arrival Time      : 15:00
+  Departure Time    : 15:00
   Service Time      : 00:00
-  Time Window       : [07:00, 22:00]
-  Travel Time (to next): 00:06
-  Distance (to next)   : 966.06 m
-  Wait Time         : 00:00
-
- Individ 56:
-  Arrival Time      : 07:06
-  Departure Time    : 07:11
-  Service Time      : 00:05
-  Time Window       : [07:00, 09:00]
-  Travel Time (to next): 00:15
-  Distance (to next)   : 5422.47 m
-  Wait Time         : 00:00
-
- Individ 65:
-  Arrival Time      : 07:26
-  Departure Time    : 07:36
-  Service Time      : 00:10
-  Time Window       : [07:00, 09:00]
-  Travel Time (to next): 00:16
-  Distance (to next)   : 6080.90 m
-  Wait Time         : 00:00
-
- Individ 62:
-  Arrival Time      : 07:53
-  Departure Time    : 08:23
-  Service Time      : 00:30
-  Time Window       : [07:00, 09:00]
-  Travel Time (to next): 00:00
-  Distance (to next)   : 0.00 m
-  Wait Time         : 00:00
-
- Individ 62:
-  Arrival Time      : 08:23
-  Departure Time    : 09:00
-  Service Time      : 00:30
-  Time Window       : [07:00, 09:00]
-  Travel Time (to next): 00:00
-  Distance (to next)   : 0.00 m
-  Wait Time         : 00:06
-
- Individ 62:
-  Arrival Time      : 09:00
-  Departure Time    : 09:10
-  Service Time      : 00:10
-  Time Window       : [09:00, 11:00]
-  Travel Time (to next): 00:06
-  Distance (to next)   : 1194.26 m
-  Wait Time         : 00:00
-
- Individ 61:
-  Arrival Time      : 09:16
-  Departure Time    : 10:11
-  Service Time      : 00:55
-  Time Window       : [09:00, 11:00]
-  Travel Time (to next): 00:07
-  Distance (to next)   : 1447.81 m
-  Wait Time         : 00:00
-
- Individ 57:
-  Arrival Time      : 10:18
-  Departure Time    : 10:53
-  Service Time      : 00:20
-  Time Window       : [09:00, 11:00]
-  Travel Time (to next): 00:06
-  Distance (to next)   : 1250.33 m
-  Wait Time         : 00:14
-
- Individ 51:
-  Arrival Time      : 11:00
-  Departure Time    : 11:15
-  Service Time      : 00:15
-  Time Window       : [11:00, 13:00]
-  Wait Time         : 00:00
-
---- Route Summary for Vehicle 5 ---
-Total Route Time : 04:15
-Total Distance    : 16362 meters
-Total Travel Time : 00:58
-Total Wait Time   : 00:21
-Total Service Time: 02:55
-
---- Route for Vehicle 6 ---
- Depot:
-  Arrival Time      : 07:00
-  Departure Time    : 07:00
-  Service Time      : 00:00
-  Time Window       : [07:00, 22:00]
+  Time Window       : [15:00, 22:00]
   Travel Time (to next): 00:05
   Distance (to next)   : 553.99 m
   Wait Time         : 00:00
 
  Individ 41:
-  Arrival Time      : 07:05
-  Departure Time    : 07:15
+  Arrival Time      : 15:05
+  Departure Time    : 15:15
   Service Time      : 00:10
-  Time Window       : [07:00, 09:00]
-  Travel Time (to next): 00:05
-  Distance (to next)   : 158.97 m
-  Wait Time         : 00:00
-
- Individ 69:
-  Arrival Time      : 07:21
-  Departure Time    : 07:26
-  Service Time      : 00:05
-  Time Window       : [07:00, 09:00]
-  Travel Time (to next): 00:05
-  Distance (to next)   : 188.96 m
-  Wait Time         : 00:00
-
- Individ 36:
-  Arrival Time      : 07:31
-  Departure Time    : 07:51
-  Service Time      : 00:20
-  Time Window       : [07:00, 09:00]
-  Travel Time (to next): 00:05
-  Distance (to next)   : 59.14 m
-  Wait Time         : 00:00
-
- Individ 37:
-  Arrival Time      : 07:56
-  Departure Time    : 08:29
-  Service Time      : 00:10
-  Time Window       : [07:00, 09:00]
-  Travel Time (to next): 00:05
-  Distance (to next)   : 215.72 m
-  Wait Time         : 00:22
-
- Individ 38:
-  Arrival Time      : 08:34
-  Departure Time    : 09:44
-  Service Time      : 00:10
-  Time Window       : [07:00, 09:00]
-  Travel Time (to next): 00:05
-  Distance (to next)   : 367.61 m
-  Wait Time         : 00:59
-
- Individ 40:
-  Arrival Time      : 09:50
-  Departure Time    : 11:00
-  Service Time      : 00:10
-  Time Window       : [09:00, 11:00]
-  Travel Time (to next): 00:00
-  Distance (to next)   : 0.00 m
-  Wait Time         : 01:00
-
- Individ 40:
-  Arrival Time      : 11:00
-  Departure Time    : 11:25
-  Service Time      : 00:25
-  Time Window       : [11:00, 13:00]
-  Travel Time (to next): 00:00
-  Distance (to next)   : 0.00 m
-  Wait Time         : 00:00
-
- Individ 40:
-  Arrival Time      : 11:25
-  Departure Time    : 11:50
-  Service Time      : 00:25
-  Time Window       : [11:00, 13:00]
+  Time Window       : [15:00, 17:00]
   Travel Time (to next): 00:05
   Distance (to next)   : 612.47 m
   Wait Time         : 00:00
 
- Individ 41:
-  Arrival Time      : 11:55
-  Departure Time    : 12:10
-  Service Time      : 00:15
-  Time Window       : [11:00, 13:00]
-  Wait Time         : 00:00
-
---- Route Summary for Vehicle 6 ---
-Total Route Time : 05:10
-Total Distance    : 2157 meters
-Total Travel Time : 00:38
-Total Wait Time   : 02:22
-Total Service Time: 02:10
-
---- Route for Vehicle 18 ---
- Depot:
-  Arrival Time      : 07:00
-  Departure Time    : 07:00
-  Service Time      : 00:00
-  Time Window       : [07:00, 22:00]
-  Travel Time (to next): 00:09
-  Distance (to next)   : 4007.34 m
-  Wait Time         : 00:00
-
- Individ 30:
-  Arrival Time      : 07:09
-  Departure Time    : 07:19
-  Service Time      : 00:10
-  Time Window       : [07:00, 09:00]
-  Travel Time (to next): 00:07
-  Distance (to next)   : 1930.81 m
-  Wait Time         : 00:00
-
- Individ 31:
-  Arrival Time      : 07:26
-  Departure Time    : 07:36
-  Service Time      : 00:10
-  Time Window       : [07:00, 09:00]
-  Travel Time (to next): 00:06
-  Distance (to next)   : 1026.09 m
-  Wait Time         : 00:00
-
- Individ 68:
-  Arrival Time      : 07:43
-  Departure Time    : 08:20
-  Service Time      : 00:10
-  Time Window       : [07:00, 09:00]
-  Travel Time (to next): 00:09
-  Distance (to next)   : 3741.54 m
-  Wait Time         : 00:26
-
- Individ 59:
-  Arrival Time      : 08:30
-  Departure Time    : 09:50
-  Service Time      : 00:20
-  Time Window       : [07:00, 09:00]
-  Travel Time (to next): 00:00
-  Distance (to next)   : 0.00 m
-  Wait Time         : 01:00
-
- Individ 60:
-  Arrival Time      : 09:50
-  Departure Time    : 11:00
-  Service Time      : 00:10
-  Time Window       : [09:00, 11:00]
-  Travel Time (to next): 00:00
-  Distance (to next)   : 0.00 m
-  Wait Time         : 01:00
-
- Individ 59:
-  Arrival Time      : 11:00
-  Departure Time    : 11:15
-  Service Time      : 00:15
-  Time Window       : [11:00, 13:00]
-  Travel Time (to next): 00:06
-  Distance (to next)   : 672.14 m
-  Wait Time         : 00:00
-
- Individ 62:
-  Arrival Time      : 11:21
-  Departure Time    : 11:36
-  Service Time      : 00:15
-  Time Window       : [11:00, 13:00]
-  Wait Time         : 00:00
-
---- Route Summary for Vehicle 18 ---
-Total Route Time : 04:36
-Total Distance    : 11378 meters
-Total Travel Time : 00:39
-Total Wait Time   : 02:26
-Total Service Time: 01:30
-
---- Route for Vehicle 21 ---
- Depot:
-  Arrival Time      : 07:00
-  Departure Time    : 07:00
-  Service Time      : 00:00
-  Time Window       : [07:00, 22:00]
-  Travel Time (to next): 00:11
-  Distance (to next)   : 5066.47 m
-  Wait Time         : 00:00
-
- Individ 19:
-  Arrival Time      : 07:11
-  Departure Time    : 07:26
-  Service Time      : 00:15
-  Time Window       : [07:00, 09:00]
-  Travel Time (to next): 00:05
-  Distance (to next)   : 164.57 m
-  Wait Time         : 00:00
-
- Individ 18:
-  Arrival Time      : 07:32
-  Departure Time    : 07:52
-  Service Time      : 00:20
-  Time Window       : [07:00, 09:00]
-  Travel Time (to next): 00:00
-  Distance (to next)   : 0.00 m
-  Wait Time         : 00:00
-
- Individ 18:
-  Arrival Time      : 07:52
-  Departure Time    : 08:12
-  Service Time      : 00:20
-  Time Window       : [07:00, 09:00]
-  Travel Time (to next): 00:07
-  Distance (to next)   : 1303.51 m
-  Wait Time         : 00:00
-
- Individ 29:
-  Arrival Time      : 08:19
-  Departure Time    : 08:29
-  Service Time      : 00:10
-  Time Window       : [07:00, 09:00]
-  Travel Time (to next): 00:00
-  Distance (to next)   : 0.00 m
-  Wait Time         : 00:00
-
- Individ 28:
-  Arrival Time      : 08:29
-  Departure Time    : 08:39
-  Service Time      : 00:10
-  Time Window       : [07:00, 09:00]
-  Travel Time (to next): 00:05
-  Distance (to next)   : 88.80 m
-  Wait Time         : 00:00
-
- Individ 26:
-  Arrival Time      : 08:44
-  Departure Time    : 08:54
-  Service Time      : 00:10
-  Time Window       : [07:00, 09:00]
-  Travel Time (to next): 00:05
-  Distance (to next)   : 329.45 m
-  Wait Time         : 00:00
-
- Individ 24:
-  Arrival Time      : 08:59
-  Departure Time    : 09:39
-  Service Time      : 00:40
-  Time Window       : [07:00, 09:00]
-  Travel Time (to next): 00:10
-  Distance (to next)   : 3888.61 m
-  Wait Time         : 00:00
-
- Individ 70:
-  Arrival Time      : 09:50
-  Departure Time    : 10:49
-  Service Time      : 00:10
-  Time Window       : [09:00, 11:00]
-  Travel Time (to next): 00:10
-  Distance (to next)   : 3888.61 m
-  Wait Time         : 00:48
-
- Individ 24:
-  Arrival Time      : 11:00
-  Departure Time    : 11:15
-  Service Time      : 00:15
-  Time Window       : [11:00, 13:00]
-  Travel Time (to next): 00:06
-  Distance (to next)   : 922.34 m
-  Wait Time         : 00:00
-
- Individ 16:
-  Arrival Time      : 11:21
-  Departure Time    : 11:36
-  Service Time      : 00:15
-  Time Window       : [11:00, 13:00]
-  Travel Time (to next): 00:05
-  Distance (to next)   : 397.42 m
-  Wait Time         : 00:00
-
- Individ 19:
-  Arrival Time      : 11:42
-  Departure Time    : 11:57
-  Service Time      : 00:15
-  Time Window       : [11:00, 13:00]
-  Travel Time (to next): 00:05
-  Distance (to next)   : 164.57 m
-  Wait Time         : 00:00
-
- Individ 18:
-  Arrival Time      : 12:02
-  Departure Time    : 12:22
-  Service Time      : 00:20
-  Time Window       : [11:00, 13:00]
-  Travel Time (to next): 00:07
-  Distance (to next)   : 1226.42 m
-  Wait Time         : 00:00
-
- Individ 1:
-  Arrival Time      : 12:29
-  Departure Time    : 12:39
-  Service Time      : 00:10
-  Time Window       : [11:00, 13:00]
-  Travel Time (to next): 00:00
-  Distance (to next)   : 0.00 m
-  Wait Time         : 00:00
-
- Individ 2:
-  Arrival Time      : 12:39
-  Departure Time    : 13:00
-  Service Time      : 00:15
-  Time Window       : [11:00, 13:00]
-  Travel Time (to next): 00:00
-  Distance (to next)   : 0.00 m
-  Wait Time         : 00:05
-
- Individ 2:
-  Arrival Time      : 13:00
-  Departure Time    : 13:10
-  Service Time      : 00:10
-  Time Window       : [13:00, 15:00]
-  Wait Time         : 00:00
-
---- Route Summary for Vehicle 21 ---
-Total Route Time : 06:10
-Total Distance    : 17441 meters
-Total Travel Time : 01:21
-Total Wait Time   : 00:53
-Total Service Time: 03:55
-
---- Route for Vehicle 22 ---
- Depot:
-  Arrival Time      : 07:00
-  Departure Time    : 07:00
-  Service Time      : 00:00
-  Time Window       : [07:00, 22:00]
-  Travel Time (to next): 00:13
-  Distance (to next)   : 5983.95 m
-  Wait Time         : 00:00
-
- Individ 8:
-  Arrival Time      : 07:13
-  Departure Time    : 07:33
-  Service Time      : 00:20
-  Time Window       : [07:00, 09:00]
-  Travel Time (to next): 00:05
-  Distance (to next)   : 122.53 m
-  Wait Time         : 00:00
-
- Individ 11:
-  Arrival Time      : 07:38
-  Departure Time    : 07:48
-  Service Time      : 00:10
-  Time Window       : [07:00, 09:00]
-  Travel Time (to next): 00:06
-  Distance (to next)   : 672.42 m
-  Wait Time         : 00:00
-
- Individ 13:
-  Arrival Time      : 07:54
-  Departure Time    : 08:19
-  Service Time      : 00:25
-  Time Window       : [07:00, 09:00]
-  Travel Time (to next): 00:06
-  Distance (to next)   : 820.05 m
-  Wait Time         : 00:00
-
- Individ 5:
-  Arrival Time      : 08:26
-  Departure Time    : 08:46
-  Service Time      : 00:20
-  Time Window       : [07:00, 09:00]
-  Travel Time (to next): 00:05
-  Distance (to next)   : 116.69 m
-  Wait Time         : 00:00
-
- Individ 2:
-  Arrival Time      : 08:51
-  Departure Time    : 09:44
+ Individ 40:
+  Arrival Time      : 15:21
+  Departure Time    : 15:51
   Service Time      : 00:30
-  Time Window       : [07:00, 09:00]
-  Travel Time (to next): 00:00
-  Distance (to next)   : 0.00 m
-  Wait Time         : 00:23
-
- Individ 2:
-  Arrival Time      : 09:44
-  Departure Time    : 10:54
-  Service Time      : 00:10
-  Time Window       : [09:00, 11:00]
-  Travel Time (to next): 00:05
-  Distance (to next)   : 116.69 m
-  Wait Time         : 00:59
-
- Individ 5:
-  Arrival Time      : 11:00
-  Departure Time    : 11:15
-  Service Time      : 00:15
-  Time Window       : [11:00, 13:00]
-  Travel Time (to next): 00:06
-  Distance (to next)   : 642.16 m
-  Wait Time         : 00:00
-
- Individ 11:
-  Arrival Time      : 11:21
-  Departure Time    : 11:36
-  Service Time      : 00:15
-  Time Window       : [11:00, 13:00]
-  Travel Time (to next): 00:06
-  Distance (to next)   : 672.42 m
-  Wait Time         : 00:00
-
- Individ 13:
-  Arrival Time      : 11:42
-  Departure Time    : 11:57
-  Service Time      : 00:15
-  Time Window       : [11:00, 13:00]
-  Travel Time (to next): 00:06
-  Distance (to next)   : 819.34 m
-  Wait Time         : 00:00
-
- Individ 6:
-  Arrival Time      : 12:03
-  Departure Time    : 12:23
-  Service Time      : 00:20
-  Time Window       : [11:00, 13:00]
+  Time Window       : [15:00, 17:00]
   Travel Time (to next): 00:00
   Distance (to next)   : 0.00 m
   Wait Time         : 00:00
 
- Individ 6:
-  Arrival Time      : 12:23
-  Departure Time    : 13:00
-  Service Time      : 00:20
-  Time Window       : [11:00, 13:00]
-  Travel Time (to next): 00:00
-  Distance (to next)   : 0.00 m
-  Wait Time         : 00:16
-
- Individ 6:
-  Arrival Time      : 13:00
-  Departure Time    : 13:15
-  Service Time      : 00:15
-  Time Window       : [13:00, 15:00]
-  Wait Time         : 00:00
-
---- Route Summary for Vehicle 22 ---
-Total Route Time : 06:15
-Total Distance    : 9966 meters
-Total Travel Time : 01:00
-Total Wait Time   : 01:39
-Total Service Time: 03:35
-
---- Route for Vehicle 23 ---
- Depot:
-  Arrival Time      : 07:00
-  Departure Time    : 07:00
-  Service Time      : 00:00
-  Time Window       : [07:00, 22:00]
+ Individ 40:
+  Arrival Time      : 15:51
+  Departure Time    : 16:21
+  Service Time      : 00:30
+  Time Window       : [15:00, 17:00]
   Travel Time (to next): 00:05
-  Distance (to next)   : 588.90 m
+  Distance (to next)   : 453.50 m
   Wait Time         : 00:00
 
- Individ 50:
-  Arrival Time      : 07:05
-  Departure Time    : 07:20
-  Service Time      : 00:15
-  Time Window       : [07:00, 09:00]
-  Travel Time (to next): 00:05
-  Distance (to next)   : 485.81 m
-  Wait Time         : 00:00
-
- Individ 46:
-  Arrival Time      : 07:26
-  Departure Time    : 07:41
-  Service Time      : 00:15
-  Time Window       : [07:00, 09:00]
-  Travel Time (to next): 00:05
-  Distance (to next)   : 127.28 m
-  Wait Time         : 00:00
-
- Individ 47:
-  Arrival Time      : 07:46
-  Departure Time    : 07:51
+ Individ 69:
+  Arrival Time      : 16:27
+  Departure Time    : 16:32
   Service Time      : 00:05
-  Time Window       : [07:00, 09:00]
-  Travel Time (to next): 00:05
-  Distance (to next)   : 544.49 m
+  Time Window       : [15:00, 17:00]
+  Travel Time (to next): 00:06
+  Distance (to next)   : 1328.85 m
   Wait Time         : 00:00
 
  Individ 51:
-  Arrival Time      : 07:57
-  Departure Time    : 08:17
-  Service Time      : 00:20
-  Time Window       : [07:00, 09:00]
+  Arrival Time      : 16:39
+  Departure Time    : 16:54
+  Service Time      : 00:15
+  Time Window       : [15:00, 17:00]
   Travel Time (to next): 00:05
   Distance (to next)   : 344.47 m
   Wait Time         : 00:00
 
  Individ 67:
-  Arrival Time      : 08:23
-  Departure Time    : 08:33
+  Arrival Time      : 17:00
+  Departure Time    : 17:10
   Service Time      : 00:10
-  Time Window       : [07:00, 09:00]
+  Time Window       : [15:00, 17:00]
+  Travel Time (to next): 00:00
+  Distance (to next)   : 0.00 m
+  Wait Time         : 00:00
+
+ Individ 67:
+  Arrival Time      : 17:10
+  Departure Time    : 17:20
+  Service Time      : 00:10
+  Time Window       : [17:00, 19:00]
   Travel Time (to next): 00:05
   Distance (to next)   : 321.46 m
   Wait Time         : 00:00
 
- Individ 54:
-  Arrival Time      : 08:38
-  Departure Time    : 08:48
+ Individ 53:
+  Arrival Time      : 17:25
+  Departure Time    : 17:35
   Service Time      : 00:10
-  Time Window       : [07:00, 09:00]
+  Time Window       : [17:00, 19:00]
   Travel Time (to next): 00:00
   Distance (to next)   : 0.00 m
   Wait Time         : 00:00
 
- Individ 53:
-  Arrival Time      : 08:48
-  Departure Time    : 09:10
+ Individ 54:
+  Arrival Time      : 17:35
+  Departure Time    : 17:45
+  Service Time      : 00:10
+  Time Window       : [17:00, 19:00]
+  Travel Time (to next): 00:07
+  Distance (to next)   : 1623.72 m
+  Wait Time         : 00:00
+
+ Individ 69:
+  Arrival Time      : 17:52
+  Departure Time    : 17:57
+  Service Time      : 00:05
+  Time Window       : [17:00, 19:00]
+  Travel Time (to next): 00:05
+  Distance (to next)   : 188.96 m
+  Wait Time         : 00:00
+
+ Individ 36:
+  Arrival Time      : 18:03
+  Departure Time    : 18:23
+  Service Time      : 00:20
+  Time Window       : [17:00, 19:00]
+  Travel Time (to next): 00:11
+  Distance (to next)   : 4130.73 m
+  Wait Time         : 00:00
+
+ Individ 16:
+  Arrival Time      : 18:34
+  Departure Time    : 18:54
+  Service Time      : 00:07
+  Time Window       : [17:00, 19:00]
+  Travel Time (to next): 00:05
+  Distance (to next)   : 397.42 m
+  Wait Time         : 00:13
+
+ Individ 19:
+  Arrival Time      : 19:00
+  Departure Time    : 19:15
   Service Time      : 00:15
-  Time Window       : [07:00, 09:00]
+  Time Window       : [19:00, 21:00]
+  Travel Time (to next): 00:05
+  Distance (to next)   : 164.57 m
+  Wait Time         : 00:00
+
+ Individ 18:
+  Arrival Time      : 19:20
+  Departure Time    : 19:40
+  Service Time      : 00:20
+  Time Window       : [19:00, 21:00]
+  Travel Time (to next): 00:06
+  Distance (to next)   : 886.00 m
+  Wait Time         : 00:00
+
+ Individ 24:
+  Arrival Time      : 19:46
+  Departure Time    : 19:56
+  Service Time      : 00:10
+  Time Window       : [19:00, 21:00]
+  Travel Time (to next): 00:05
+  Distance (to next)   : 329.45 m
+  Wait Time         : 00:00
+
+ Individ 26:
+  Arrival Time      : 20:02
+  Departure Time    : 20:12
+  Service Time      : 00:10
+  Time Window       : [19:00, 21:00]
+  Wait Time         : 00:00
+
+--- Route Summary for Vehicle 20 ---
+Total Route Time : 05:12
+Total Distance    : 11336 meters
+Total Travel Time : 01:22
+Total Wait Time   : 00:13
+Total Service Time: 03:37
+
+--- Route for Vehicle 21 ---
+ Depot:
+  Arrival Time      : 15:00
+  Departure Time    : 15:00
+  Service Time      : 00:00
+  Time Window       : [15:00, 22:00]
+  Travel Time (to next): 00:11
+  Distance (to next)   : 4546.83 m
+  Wait Time         : 00:00
+
+ Individ 24:
+  Arrival Time      : 15:11
+  Departure Time    : 15:26
+  Service Time      : 00:15
+  Time Window       : [15:00, 17:00]
+  Travel Time (to next): 00:06
+  Distance (to next)   : 886.99 m
+  Wait Time         : 00:00
+
+ Individ 19:
+  Arrival Time      : 15:32
+  Departure Time    : 15:47
+  Service Time      : 00:15
+  Time Window       : [15:00, 17:00]
+  Travel Time (to next): 00:05
+  Distance (to next)   : 164.57 m
+  Wait Time         : 00:00
+
+ Individ 18:
+  Arrival Time      : 15:52
+  Departure Time    : 16:12
+  Service Time      : 00:20
+  Time Window       : [15:00, 17:00]
+  Travel Time (to next): 00:06
+  Distance (to next)   : 884.06 m
+  Wait Time         : 00:00
+
+ Individ 6:
+  Arrival Time      : 16:19
+  Departure Time    : 16:39
+  Service Time      : 00:20
+  Time Window       : [15:00, 17:00]
   Travel Time (to next): 00:00
   Distance (to next)   : 0.00 m
-  Wait Time         : 00:06
+  Wait Time         : 00:00
 
- Individ 53:
-  Arrival Time      : 09:10
-  Departure Time    : 11:00
-  Service Time      : 00:50
-  Time Window       : [09:00, 11:00]
+ Individ 6:
+  Arrival Time      : 16:39
+  Departure Time    : 17:45
+  Service Time      : 00:20
+  Time Window       : [15:00, 17:00]
+  Travel Time (to next): 00:00
+  Distance (to next)   : 0.00 m
+  Wait Time         : 00:45
+
+ Individ 6:
+  Arrival Time      : 17:45
+  Departure Time    : 19:00
+  Service Time      : 00:15
+  Time Window       : [17:00, 19:00]
   Travel Time (to next): 00:00
   Distance (to next)   : 0.00 m
   Wait Time         : 01:00
 
- Individ 54:
-  Arrival Time      : 11:00
-  Departure Time    : 11:15
-  Service Time      : 00:15
-  Time Window       : [11:00, 13:00]
-  Travel Time (to next): 00:05
-  Distance (to next)   : 321.45 m
+ Individ 6:
+  Arrival Time      : 19:00
+  Departure Time    : 19:20
+  Service Time      : 00:20
+  Time Window       : [19:00, 21:00]
+  Travel Time (to next): 00:00
+  Distance (to next)   : 0.00 m
   Wait Time         : 00:00
 
- Individ 67:
-  Arrival Time      : 11:20
-  Departure Time    : 11:30
-  Service Time      : 00:10
-  Time Window       : [11:00, 13:00]
-  Wait Time         : 00:00
-
---- Route Summary for Vehicle 23 ---
-Total Route Time : 04:30
-Total Distance    : 2734 meters
-Total Travel Time : 00:38
-Total Wait Time   : 01:06
-Total Service Time: 02:45
-
---- Route for Vehicle 25 ---
- Depot:
-  Arrival Time      : 07:00
-  Departure Time    : 07:00
-  Service Time      : 00:00
-  Time Window       : [07:00, 22:00]
-  Travel Time (to next): 00:10
-  Distance (to next)   : 4093.38 m
+ Individ 6:
+  Arrival Time      : 19:20
+  Departure Time    : 19:40
+  Service Time      : 00:20
+  Time Window       : [19:00, 21:00]
+  Travel Time (to next): 00:08
+  Distance (to next)   : 2037.03 m
   Wait Time         : 00:00
 
  Individ 23:
-  Arrival Time      : 07:10
-  Departure Time    : 07:17
+  Arrival Time      : 19:48
+  Departure Time    : 19:55
   Service Time      : 00:07
-  Time Window       : [07:00, 09:00]
+  Time Window       : [19:00, 21:00]
   Travel Time (to next): 00:05
   Distance (to next)   : 284.49 m
   Wait Time         : 00:00
 
  Individ 21:
-  Arrival Time      : 07:22
-  Departure Time    : 07:27
-  Service Time      : 00:05
-  Time Window       : [07:00, 09:00]
-  Travel Time (to next): 00:07
-  Distance (to next)   : 1298.22 m
+  Arrival Time      : 20:01
+  Departure Time    : 20:11
+  Service Time      : 00:10
+  Time Window       : [19:00, 21:00]
+  Wait Time         : 00:00
+
+--- Route Summary for Vehicle 21 ---
+Total Route Time : 05:11
+Total Distance    : 8804 meters
+Total Travel Time : 00:43
+Total Wait Time   : 01:45
+Total Service Time: 02:42
+
+--- Route for Vehicle 22 ---
+ Depot:
+  Arrival Time      : 15:00
+  Departure Time    : 15:00
+  Service Time      : 00:00
+  Time Window       : [15:00, 22:00]
+  Travel Time (to next): 00:11
+  Distance (to next)   : 4972.17 m
   Wait Time         : 00:00
 
  Individ 16:
-  Arrival Time      : 07:34
-  Departure Time    : 07:49
-  Service Time      : 00:15
-  Time Window       : [07:00, 09:00]
-  Travel Time (to next): 00:00
-  Distance (to next)   : 0.00 m
+  Arrival Time      : 15:11
+  Departure Time    : 15:21
+  Service Time      : 00:10
+  Time Window       : [15:00, 17:00]
+  Travel Time (to next): 00:07
+  Distance (to next)   : 1442.68 m
   Wait Time         : 00:00
 
- Individ 17:
-  Arrival Time      : 07:49
-  Departure Time    : 08:09
+ Individ 13:
+  Arrival Time      : 15:28
+  Departure Time    : 15:48
   Service Time      : 00:20
-  Time Window       : [07:00, 09:00]
+  Time Window       : [15:00, 17:00]
   Travel Time (to next): 00:06
-  Distance (to next)   : 960.99 m
+  Distance (to next)   : 820.05 m
   Wait Time         : 00:00
 
- Individ 6:
-  Arrival Time      : 08:16
-  Departure Time    : 08:51
-  Service Time      : 00:35
-  Time Window       : [07:00, 09:00]
+ Individ 5:
+  Arrival Time      : 15:55
+  Departure Time    : 16:10
+  Service Time      : 00:15
+  Time Window       : [15:00, 17:00]
+  Travel Time (to next): 00:05
+  Distance (to next)   : 116.69 m
+  Wait Time         : 00:00
+
+ Individ 1:
+  Arrival Time      : 16:15
+  Departure Time    : 16:30
+  Service Time      : 00:10
+  Time Window       : [15:00, 17:00]
+  Travel Time (to next): 00:00
+  Distance (to next)   : 0.00 m
+  Wait Time         : 00:04
+
+ Individ 2:
+  Arrival Time      : 16:30
+  Departure Time    : 17:45
+  Service Time      : 00:15
+  Time Window       : [15:00, 17:00]
+  Travel Time (to next): 00:00
+  Distance (to next)   : 0.00 m
+  Wait Time         : 01:00
+
+ Individ 2:
+  Arrival Time      : 17:45
+  Departure Time    : 19:00
+  Service Time      : 00:15
+  Time Window       : [17:00, 19:00]
+  Travel Time (to next): 00:00
+  Distance (to next)   : 0.00 m
+  Wait Time         : 01:00
+
+ Individ 2:
+  Arrival Time      : 19:00
+  Departure Time    : 19:20
+  Service Time      : 00:20
+  Time Window       : [19:00, 21:00]
+  Travel Time (to next): 00:06
+  Distance (to next)   : 636.32 m
+  Wait Time         : 00:00
+
+ Individ 8:
+  Arrival Time      : 19:26
+  Departure Time    : 19:46
+  Service Time      : 00:20
+  Time Window       : [19:00, 21:00]
+  Travel Time (to next): 00:05
+  Distance (to next)   : 549.88 m
+  Wait Time         : 00:00
+
+ Individ 13:
+  Arrival Time      : 19:52
+  Departure Time    : 20:07
+  Service Time      : 00:15
+  Time Window       : [19:00, 21:00]
+  Wait Time         : 00:00
+
+--- Route Summary for Vehicle 22 ---
+Total Route Time : 05:07
+Total Distance    : 8538 meters
+Total Travel Time : 00:42
+Total Wait Time   : 02:04
+Total Service Time: 02:20
+
+--- Route for Vehicle 23 ---
+ Depot:
+  Arrival Time      : 15:00
+  Departure Time    : 15:00
+  Service Time      : 00:00
+  Time Window       : [15:00, 22:00]
+  Travel Time (to next): 00:06
+  Distance (to next)   : 910.76 m
+  Wait Time         : 00:00
+
+ Individ 54:
+  Arrival Time      : 15:06
+  Departure Time    : 15:21
+  Service Time      : 00:15
+  Time Window       : [15:00, 17:00]
   Travel Time (to next): 00:00
   Distance (to next)   : 0.00 m
   Wait Time         : 00:00
 
- Individ 6:
-  Arrival Time      : 08:51
-  Departure Time    : 09:26
-  Service Time      : 00:35
-  Time Window       : [07:00, 09:00]
+ Individ 53:
+  Arrival Time      : 15:21
+  Departure Time    : 15:33
+  Service Time      : 00:10
+  Time Window       : [15:00, 17:00]
+  Travel Time (to next): 00:06
+  Distance (to next)   : 740.00 m
+  Wait Time         : 00:02
+
+ Individ 57:
+  Arrival Time      : 15:40
+  Departure Time    : 17:00
+  Service Time      : 00:20
+  Time Window       : [15:00, 17:00]
+  Travel Time (to next): 00:00
+  Distance (to next)   : 0.00 m
+  Wait Time         : 01:00
+
+ Individ 57:
+  Arrival Time      : 17:00
+  Departure Time    : 17:20
+  Service Time      : 00:20
+  Time Window       : [17:00, 19:00]
+  Travel Time (to next): 00:07
+  Distance (to next)   : 1447.81 m
+  Wait Time         : 00:00
+
+ Individ 61:
+  Arrival Time      : 17:27
+  Departure Time    : 17:37
+  Service Time      : 00:10
+  Time Window       : [17:00, 19:00]
+  Travel Time (to next): 00:06
+  Distance (to next)   : 1194.26 m
+  Wait Time         : 00:00
+
+ Individ 62:
+  Arrival Time      : 17:43
+  Departure Time    : 18:13
+  Service Time      : 00:30
+  Time Window       : [17:00, 19:00]
+  Travel Time (to next): 00:06
+  Distance (to next)   : 672.14 m
+  Wait Time         : 00:00
+
+ Individ 60:
+  Arrival Time      : 18:19
+  Departure Time    : 19:00
+  Service Time      : 00:10
+  Time Window       : [17:00, 19:00]
+  Travel Time (to next): 00:00
+  Distance (to next)   : 0.00 m
+  Wait Time         : 00:30
+
+ Individ 59:
+  Arrival Time      : 19:00
+  Departure Time    : 19:15
+  Service Time      : 00:15
+  Time Window       : [19:00, 21:00]
+  Travel Time (to next): 00:09
+  Distance (to next)   : 3484.06 m
+  Wait Time         : 00:00
+
+ Individ 40:
+  Arrival Time      : 19:24
+  Departure Time    : 19:39
+  Service Time      : 00:15
+  Time Window       : [19:00, 21:00]
+  Travel Time (to next): 00:00
+  Distance (to next)   : 0.00 m
+  Wait Time         : 00:00
+
+ Individ 40:
+  Arrival Time      : 19:39
+  Departure Time    : 19:54
+  Service Time      : 00:15
+  Time Window       : [19:00, 21:00]
+  Travel Time (to next): 00:05
+  Distance (to next)   : 612.47 m
+  Wait Time         : 00:00
+
+ Individ 41:
+  Arrival Time      : 20:00
+  Departure Time    : 20:10
+  Service Time      : 00:10
+  Time Window       : [19:00, 21:00]
+  Wait Time         : 00:00
+
+--- Route Summary for Vehicle 23 ---
+Total Route Time : 05:10
+Total Distance    : 9061 meters
+Total Travel Time : 00:47
+Total Wait Time   : 01:32
+Total Service Time: 02:50
+
+--- Route for Vehicle 25 ---
+ Depot:
+  Arrival Time      : 15:00
+  Departure Time    : 15:00
+  Service Time      : 00:00
+  Time Window       : [15:00, 22:00]
+  Travel Time (to next): 00:08
+  Distance (to next)   : 2798.49 m
+  Wait Time         : 00:00
+
+ Individ 62:
+  Arrival Time      : 15:08
+  Departure Time    : 16:23
+  Service Time      : 00:15
+  Time Window       : [15:00, 17:00]
+  Travel Time (to next): 00:16
+  Distance (to next)   : 6080.90 m
+  Wait Time         : 00:59
+
+ Individ 65:
+  Arrival Time      : 16:39
+  Departure Time    : 17:49
+  Service Time      : 00:10
+  Time Window       : [15:00, 17:00]
+  Travel Time (to next): 00:00
+  Distance (to next)   : 0.00 m
+  Wait Time         : 01:00
+
+ Individ 65:
+  Arrival Time      : 17:49
+  Departure Time    : 18:53
+  Service Time      : 00:04
+  Time Window       : [17:00, 19:00]
+  Travel Time (to next): 00:06
+  Distance (to next)   : 658.17 m
+  Wait Time         : 00:59
+
+ Individ 63:
+  Arrival Time      : 19:00
+  Departure Time    : 19:07
+  Service Time      : 00:07
+  Time Window       : [19:00, 21:00]
+  Travel Time (to next): 00:14
+  Distance (to next)   : 5221.40 m
+  Wait Time         : 00:00
+
+ Individ 51:
+  Arrival Time      : 19:21
+  Departure Time    : 19:36
+  Service Time      : 00:15
+  Time Window       : [19:00, 21:00]
+  Travel Time (to next): 00:05
+  Distance (to next)   : 544.49 m
+  Wait Time         : 00:00
+
+ Individ 47:
+  Arrival Time      : 19:42
+  Departure Time    : 19:47
+  Service Time      : 00:05
+  Time Window       : [19:00, 21:00]
+  Travel Time (to next): 00:05
+  Distance (to next)   : 224.79 m
+  Wait Time         : 00:00
+
+ Individ 50:
+  Arrival Time      : 19:52
+  Departure Time    : 20:02
+  Service Time      : 00:10
+  Time Window       : [19:00, 21:00]
+  Travel Time (to next): 00:07
+  Distance (to next)   : 1866.67 m
+  Wait Time         : 00:00
+
+ Individ 70:
+  Arrival Time      : 20:10
+  Departure Time    : 20:20
+  Service Time      : 00:10
+  Time Window       : [19:00, 21:00]
   Wait Time         : 00:00
 
 --- Route Summary for Vehicle 25 ---
-Total Route Time : 02:26
-Total Distance    : 6637 meters
-Total Travel Time : 00:29
-Total Wait Time   : 00:00
-Total Service Time: 01:57
+Total Route Time : 05:20
+Total Distance    : 17395 meters
+Total Travel Time : 01:04
+Total Wait Time   : 02:59
+Total Service Time: 01:16
 
 === Overall Summary ===
-Total Active Vehicles  : 7
-Total Time of All Routes: 33:23
-Total Distance of All Routes: 66675 meters
-Total Travel Time       : 05:47
-Total Wait Time         : 08:49
-Total Service Time      : 18:47
-Average Speed           : 11.52 km/h
+Total Active Vehicles  : 5
+Total Time of All Routes: 26:01
+Total Distance of All Routes: 55134 meters
+Total Travel Time       : 04:41
+Total Wait Time         : 08:35
+Total Service Time      : 12:45
+Average Speed           : 11.77 km/h
