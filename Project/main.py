@@ -12,6 +12,12 @@ def main():
     
     medarbetare_df = rensa_medarb_data(data["medarbetare"])
 
+    coordinates_df = pd.read_excel("Project/data/Studentuppgift fiktiv planering.xlsx", "Koordinater", header=None)
+    coordinates = np.asarray(coordinates_df.iloc[:,1])
+
+    print(coordinates)
+
+
     dag = input("Ange dag för schema: ")
 
     dag = dag.title()
@@ -29,7 +35,6 @@ def main():
 
     # Create a graph for route optimization using OSMnx
     place_name = "Skellefteå, Sweden"
-    coordinates = (64.8402, 64.6462, 21.3169, 20.8486)
     G = ox.graph_from_bbox(bbox=coordinates, network_type='drive');
     G = ox.utils_graph.truncate.largest_component(G, strongly=True);
 
