@@ -15,7 +15,6 @@ def main():
     coordinates_df = pd.read_excel("Project/data/Studentuppgift fiktiv planering.xlsx", "Koordinater", header=None)
     coordinates = np.asarray(coordinates_df.iloc[:,1])
 
-    print(coordinates)
 
 
     dag = input("Ange dag för schema: ")
@@ -47,8 +46,8 @@ def main():
     print(em_df)
 
     antal_medarbetare = 25
-    shift_start = 15
-    shift_end = 22
-    optimize_routes(em_df, medarbetare_df, G, depot_location, antal_medarbetare, shift_start, shift_end)
+    shift_start = 7
+    shift_end = 15
+    optimize_routes(fm_df, medarbetare_df, G, depot_location, antal_medarbetare, shift_start, shift_end)
 if __name__ == '__main__':
     main()
