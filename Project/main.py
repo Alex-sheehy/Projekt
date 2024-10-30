@@ -44,8 +44,14 @@ def main():
     em_df.to_excel("em.xlsx", index=False)
 
     antal_medarbetare = len(medarbetare_df)
-    shift_start = 15
-    shift_end = 22
+    fm = False
+    if fm == True:
+        shift_start = 7
+        shift_end = 15
+    else:
+        shift_start = 15
+        shift_end = 22
+    
     optimize_routes(em_df, medarbetare_df, G, depot_location, antal_medarbetare, shift_start, shift_end)
     ox.plot_graph(G)
 if __name__ == '__main__':
