@@ -302,16 +302,20 @@ def optimize_routes(brukare_df, medarbetare_df, G, depot_location, antal_medarbe
         total_service_time = 0  # In seconds
         active_vehicles = 0  # Count of vehicles with actual routes
 
+        # Initialize a dictionary to collect timetable entries per vehicle
+        timetable_per_vehicle = {}
+
         for vehicle_id in range(num_vehicles):
             index = routing.Start(vehicle_id)
             if routing.IsEnd(solution.Value(routing.NextVar(index))):
                 continue  # Skip vehicles with no assignments
             active_vehicles += 1
-            plan_output = f"--- Route for Vehicle {vehicle_id + 1} ---\n"
             route_distance = 0  # In meters
             route_travel_time = 0  # In seconds
             route_wait_time = 0  # In seconds
             route_service_time = 0  # In seconds
+
+            vehicle_schedule = []
 
             while not routing.IsEnd(index):
                 node_index = manager.IndexToNode(index)
@@ -323,10 +327,19 @@ def optimize_routes(brukare_df, medarbetare_df, G, depot_location, antal_medarbe
                 if node_index == 0:
                     individ_name = "Depot"
                 else:
-                    individ_name = brukare_df['Individ'].iloc[node_index-1]
+                    individ_name = brukare_df['Individ'].iloc[node_index - 1]
 
-                plan_output += f" {individ_name}:\n"
-                plan_output += f"  Arrival Time      : {seconds_to_hhmm(arrival_time, shift=True)}\n"
+                # Collect schedule information
+                vehicle_schedule.append({
+                    'Vehicle': vehicle_id + 1,
+                    'Location': individ_name,
+                    'Arrival Time': seconds_to_hhmm(arrival_time, shift=True),
+                    'Service Start': seconds_to_hhmm(arrival_time, shift=True),
+                    'Service End': seconds_to_hhmm(arrival_time + service_time, shift=True),
+                    'Departure Time': seconds_to_hhmm(arrival_time + service_time, shift=True),
+                    'Time Window Start': seconds_to_hhmm(time_window[0], shift=True),
+                    'Time Window End': seconds_to_hhmm(time_window[1], shift=True),
+                })
 
                 next_index = solution.Value(routing.NextVar(index))
 
@@ -358,51 +371,20 @@ def optimize_routes(brukare_df, medarbetare_df, G, depot_location, antal_medarbe
                     distance = distance_matrix[node_index][next_node_index]
                     route_distance += distance
 
-                    # Time window formatting
-                    time_window_start_formatted = seconds_to_hhmm(time_window[0], shift=True)
-                    time_window_end_formatted = seconds_to_hhmm(time_window[1], shift=True)
-
-                    # Append to plan_output
-                    plan_output += (
-                        f"  Departure Time    : {seconds_to_hhmm(departure_time, shift=True)}\n"
-                        f"  Service Time      : {seconds_to_hhmm(service_time)}\n"
-                        f"  Time Window       : [{time_window_start_formatted}, {time_window_end_formatted}]\n"
-                        f"  Travel Time (to next): {seconds_to_hhmm(travel_time)}\n"
-                        f"  Distance (to next)   : {distance:.2f} m\n"
-                        f"  Wait Time         : {seconds_to_hhmm(wait_time)}\n\n"
-                    )
-
                 else:
-                    # At the last node (depot), no next node
+                    # At the last node (returning to depot), no next node
                     departure_time = arrival_time + service_time
                     wait_time = 0
                     route_service_time += service_time
 
-                    time_window_start_formatted = seconds_to_hhmm(time_window[0], shift=True)
-                    time_window_end_formatted = seconds_to_hhmm(time_window[1], shift=True)
-
-                    plan_output += (
-                        f"  Departure Time    : {seconds_to_hhmm(departure_time, shift=True)}\n"
-                        f"  Service Time      : {seconds_to_hhmm(service_time)}\n"
-                        f"  Time Window       : [{time_window_start_formatted}, {time_window_end_formatted}]\n"
-                        f"  Wait Time         : {seconds_to_hhmm(wait_time)}\n\n"
-                    )
-
                 index = next_index
+
+            # Sort the vehicle schedule by arrival time
+            vehicle_schedule_sorted = sorted(vehicle_schedule, key=lambda x: x['Arrival Time'])
+            timetable_per_vehicle[vehicle_id + 1] = vehicle_schedule_sorted
 
             # Compute total route time
             route_total_time_seconds = route_travel_time + route_wait_time + route_service_time
-
-            plan_output += (
-                f"--- Route Summary for Vehicle {vehicle_id + 1} ---\n"
-                f"Total Route Time : {seconds_to_hhmm(route_total_time_seconds)}\n"
-                f"Total Distance    : {route_distance:.0f} meters\n"
-                f"Total Travel Time : {seconds_to_hhmm(route_travel_time)}\n"
-                f"Total Wait Time   : {seconds_to_hhmm(route_wait_time)}\n"
-                f"Total Service Time: {seconds_to_hhmm(route_service_time)}\n\n"
-            )
-            # Append to the output string instead of printing
-            output_string += plan_output
 
             # Accumulate totals
             total_time += route_total_time_seconds
@@ -411,20 +393,43 @@ def optimize_routes(brukare_df, medarbetare_df, G, depot_location, antal_medarbe
             total_wait_time += route_wait_time
             total_service_time += route_service_time
 
+        # Now, create a timetable overview per vehicle
+        output_string += "=== Timetable Overview ===\n\n"
+
+        for vehicle_id in sorted(timetable_per_vehicle.keys()):
+            vehicle_schedule = timetable_per_vehicle[vehicle_id]
+            output_string += f"--- Vehicle {vehicle_id} Route ---\n"
+            output_string += "{:<15} {:<12} {:<12} {:<12} {:<12} {:<12} {:<12}\n".format(
+                'Location', 'Arrival', 'Service Start', 'Service End', 'Departure', 'TW Start', 'TW End'
+            )
+            output_string += "-" * 80 + "\n"
+
+            for entry in vehicle_schedule:
+                output_string += "{:<15} {:<12} {:<12} {:<12} {:<12} {:<12} {:<12}\n".format(
+                    entry['Location'],
+                    entry['Arrival Time'],
+                    entry['Service Start'],
+                    entry['Service End'],
+                    entry['Departure Time'],
+                    entry['Time Window Start'],
+                    entry['Time Window End'],
+                )
+            output_string += "\n"
+
         # Overall summary
         overall_summary = f"=== Overall Summary ===\n"
-        overall_summary += f"Total Active Vehicles  : {active_vehicles}\n"
-        overall_summary += f"Total Time of All Routes: {seconds_to_hhmm(total_time)}\n"
+        overall_summary += f"Total Active Vehicles    : {active_vehicles}\n"
+        overall_summary += f"Total Time of All Routes : {seconds_to_hhmm(total_time)}\n"
         overall_summary += f"Total Distance of All Routes: {total_distance:.0f} meters\n"
-        overall_summary += f"Total Travel Time       : {seconds_to_hhmm(total_travel_time)}\n"
-        overall_summary += f"Total Wait Time         : {seconds_to_hhmm(total_wait_time)}\n"
-        overall_summary += f"Total Service Time      : {seconds_to_hhmm(total_service_time)}\n"
+        overall_summary += f"Total Travel Time        : {seconds_to_hhmm(total_travel_time)}\n"
+        overall_summary += f"Total Wait Time          : {seconds_to_hhmm(total_wait_time)}\n"
+        overall_summary += f"Total Service Time       : {seconds_to_hhmm(total_service_time)}\n"
         # Calculate average speed
         if total_travel_time > 0:
             average_speed = (total_distance / total_travel_time) * 3.6  # m/s to km/h
-            overall_summary += f"Average Speed           : {average_speed:.2f} km/h\n"
+            overall_summary += f"Average Speed            : {average_speed:.2f} km/h\n"
         else:
-            overall_summary += "Average Speed           : N/A (No routes found)\n"
+            overall_summary += "Average Speed            : N/A (No routes found)\n"
 
         # Append overall summary to the output string
         output_string += overall_summary
@@ -433,7 +438,7 @@ def optimize_routes(brukare_df, medarbetare_df, G, depot_location, antal_medarbe
 
     # Print the output_string to the console (optional)
     print(output_string)
-    
+
     # Write the output_string to a text file
     with open('route_output.txt', 'w') as f:
         f.write(output_string)

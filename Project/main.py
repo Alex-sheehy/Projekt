@@ -43,7 +43,7 @@ def main():
     fm_df.to_excel("fm.xlsx", index=False)
     em_df.to_excel("em.xlsx", index=False)
 
-    antal_medarbetare = 25
+    antal_medarbetare = len(medarbetare_df)
     shift_start = 15
     shift_end = 22
     optimize_routes(em_df, medarbetare_df, G, depot_location, antal_medarbetare, shift_start, shift_end)
