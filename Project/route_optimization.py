@@ -272,7 +272,7 @@ def optimize_routes(brukare_df, medarbetare_df, G, depot_location, antal_medarbe
     search_parameters = pywrapcp.DefaultRoutingSearchParameters()
     search_parameters.first_solution_strategy = routing_enums_pb2.FirstSolutionStrategy.AUTOMATIC
     search_parameters.local_search_metaheuristic = routing_enums_pb2.LocalSearchMetaheuristic.TABU_SEARCH
-    search_parameters.time_limit.seconds = 120  # Increase time limit to 5 minutes
+    search_parameters.time_limit.seconds = 60  # Increase time limit to 5 minutes
     search_parameters.log_search = True
 
     # Solve the problem

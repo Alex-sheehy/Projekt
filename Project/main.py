@@ -53,6 +53,5 @@ def main():
         shift_end = 22
     
     optimize_routes(em_df, medarbetare_df, G, depot_location, antal_medarbetare, shift_start, shift_end)
-    ox.plot_graph(G)
 if __name__ == '__main__':
     main()
