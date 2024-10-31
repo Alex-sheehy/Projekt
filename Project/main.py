@@ -15,7 +15,8 @@ def main():
 
 
 
-    dag = input("Ange dag för schema: ")
+    dag = input("Ange dag för schema (mån-fre): ")
+    FM = input("Ange 1 för förmiddag, Ange 0 för eftermiddag: ")
 
     dag = dag.title()
 
@@ -36,14 +37,15 @@ def main():
     G = ox.utils_graph.truncate.largest_component(G, strongly=True);
 
     depot_location = (64.71128317136987, 21.16924807421642)
-    temp_index = len(brukare_dag_df) // 2
 
     fm_df.to_excel("fm.xlsx", index=False)
     em_df.to_excel("em.xlsx", index=False)
 
     antal_medarbetare = len(medarbetare_df)
-    fm = False
-    if fm == True:
+
+    
+
+    if FM == 1:
         shift_start = 7
         shift_end = 15
     else:
