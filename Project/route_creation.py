@@ -1,6 +1,5 @@
 import re
 from copy import deepcopy
-from utils import check_visits
 
 def skapa_brukare_dict(brukare_df, tider, regex_filters):
     """
