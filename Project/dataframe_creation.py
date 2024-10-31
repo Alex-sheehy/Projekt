@@ -1,4 +1,4 @@
-from data_processing import ladda_data, rensa_medarb_data
+from data_processing import ladda_data
 import pandas as pd
 import re
 
